@@ -1,2 +1,66 @@
 = Groovy DSL Workshop
 Vladimír Oraný <https://github.com/musketyr[icon:github[] @musketyr]>
+
+== Getting Started
+
+In this workshop we will learn how to create domain specific languages (DSL) in Groovy.
+We will create builder-pattern style DSL with nested blocks which perfectly suits the Groovy language.
+
+> The builder pattern is used to create complex objects with constituent parts that must be created in the same order or using a specific algorithm. An external class controls the construction algorithm. — The Gang of Four
+
+We will use https://yuml.me/[yUML diagrams] (data class diagrams) as a reference domain model.
+
+This workshop is based on **Groovy DSL Builders** series which you can use as reference documentation:
+
+1. https://medium.com/@musketyr/groovy-dsl-builders-1-the-concept-2d5a97fa0a51[The Concept: The core concept of builders]
+2. https://medium.com/p/fda1f2ebe657[The Essence: The closures' basics]
+3. https://medium.com/p/df2e9a02557a[The Aid: Using the annotations for static compilation]
+4. https://medium.com/p/1e2edc2311f8[The Disguise: Hiding the implementation of the builder API]
+5. https://medium.com/p/afb47ebbf89d[The Desiccation: Keeping the code DRY]
+6. https://medium.com/p/83ced4b8f2b[The Expectations: The importance of handling closures' owner properly]
+7. https://medium.com/p/d612fd261471[The Extension: Designing your builder DSL for extendability]
+8. https://medium.com/p/99bd118538b4[The Resignation: Rewriting the Groovy DSL builder into Java]
+9. https://medium.com/p/d065f0253e98[The Navigation: Using the annotations for named parameters]
+10. https://medium.com/p/9d2b961dbc55[The Conclusion: The checklist for Groovy DSL builders' authors]
+
+=== Software Requirements
+
+To get started you need to have installed following:
+
+ * http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html[Java Development Kit 8]
+
+Project is built using https://gradle.org/[Gradle] build tool but it's using https://docs.gradle.org/current/userguide/gradle_wrapper.html[Gradle Wrapper]
+so you are not required to install it manually nor you don't have to be afraid of version clash.
+
+You can use IDE of your choice but https://www.jetbrains.com/idea/[IntelliJ IDEA] provides so far the best
+Gradle and Groovy integration even in the free Community version. Import the project as Gradle project get the best developer experience.
+
+=== Project Archive
+
+To get started download link:archives/groovy-dsl-workshop.zip[exercise project archive file] and unzip it. Run following command to get all dependencies downloaded:
+
+```
+./gradlew dependencies
+```
+
+== 1. Introduction
+
+== 2. Managing Relationships
+
+== 3. Closures
+
+== 4. API Extraction
+
+== 5. Closures with Parameters
+
+== 6. Closure Pitfalls
+
+== 7. Providing Extension Points
+
+== 8. Java DSL
+
+== 9. Named Arguments
+
+== Solutions
+
+You can find reference solutions https://github.com/musketyr/yuml-dsl-builder/releases[here].

@@ -9,7 +9,7 @@ version = currentVersion
 
 
 task exercisesArchive(type: Zip) {
-    archiveName = 'gritter.zip'
+    archiveName = 'groovy-dsl-workshop.zip'
     from('.') {
         exclude '.git'
         exclude '.idea'
