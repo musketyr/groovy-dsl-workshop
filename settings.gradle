@@ -1,0 +1,2 @@
+include 'yuml'
+rootProject.name = 'groovy-dsl-workshop'

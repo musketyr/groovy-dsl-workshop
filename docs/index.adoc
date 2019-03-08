@@ -1,0 +1,2 @@
+= Groovy DSL Workshop
+Vladimír Oraný <https://github.com/musketyr[icon:github[] @musketyr]>

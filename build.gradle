@@ -1,0 +1,71 @@
+plugins {
+    id 'org.ajoberstar.github-pages' version '1.5.1'
+    id 'org.asciidoctor.gradle.asciidoctor' version '1.5.1'
+}
+
+String currentVersion = '1.0.0'
+
+version = currentVersion
+
+
+task exercisesArchive(type: Zip) {
+    archiveName = 'gritter.zip'
+    from('.') {
+        exclude '.git'
+        exclude '.idea'
+        exclude '**/.gradle'
+        exclude '**/build'
+        exclude '**/node_modules'
+        exclude 'docs'
+        exclude '.gitignore'
+        exclude 'README.adoc'
+    }
+}
+
+task copyExercisesArchive(dependsOn: exercisesArchive, type: Copy) {
+    from exercisesArchive.archivePath
+    into "$asciidoctor.outputDir/html5/archives"
+}
+
+// asciidoctor publishing
+asciidoctor {
+
+    sourceDir = file('docs')
+
+    resources {
+        from(sourceDir) {
+            include 'css/**', 'images/**', 'xlsx/**'
+        }
+    }
+
+    attributes 'docinfo1': ['version': currentVersion],
+            'imagesdir': 'images',
+            'source-highlighter': 'highlight.js',
+            'stylesdir': 'css',
+            icons: 'font',
+            'toc': 'left',
+            version: project.version,
+            'projectUrl': 'https://github.com/musketyr/excel-in-groovy'
+}
+
+githubPages {
+    repoUri = 'https://github.com/musketyr/groovy-dsl-workshop'
+
+    credentials {
+        username = getPropertyOrUseDefault('githubToken', '')
+        password = ''
+    }
+
+    pages {
+        from file(asciidoctor.outputDir.path + '/html5')
+    }
+}
+
+asciidoctor.dependsOn copyExercisesArchive
+publishGhPages.dependsOn asciidoctor
+
+
+
+String getPropertyOrUseDefault(String propertyName, String defaultValue) {
+    hasProperty(propertyName) ? getProperty(propertyName) : defaultValue
+}
