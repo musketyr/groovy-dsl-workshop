@@ -54,101 +54,105 @@ class Diagram05Spec extends Specification {
             'diagram with methods'  | buildDiagramDiagramUsingHelperMethods()   | EXPECTED_DIAGRAM_DIAGRAM
     }
 
-//    @CompileStatic
-//    private static Diagram buildOrderDiagram() {
-//        Diagram.build {
-//            note('You can stick notes on diagrams too!', 'skyblue')
-//
-//            aggregation('Customer', 'Order') {
-//                source '1'
-//                destination '0..*', 'orders'
-//            }
-//
-//            composition('Order', 'LineItem') {
-//                source '*'
-//                destination '*'
-//            }
-//
-//            association('Order', 'DeliveryMethod') {
-//                destination '1'
-//            }
-//
-//            association('Order', 'Product') {
-//                source '*'
-//                destination '*'
-//            }
-//
-//            association('Category', 'Product') {
-//                bidirectional true
-//            }
-//
-//            type 'National' inherits from type 'DeliveryMethod'
-//            type'International' inherits from type 'DeliveryMethod'
-//        }
-//    }
-//
-//    @CompileStatic
-//    private static Diagram buildDiagramDiagramLiteral() {
-//        Diagram.build {
-//            note 'YUML Diagram Components'
-//
-//            // diagram should have at least one type to be meaningful, rest is optional
-//            type 'Diagram' has one to many type 'Type'
-//            type 'Diagram' has zero to many type 'Note'
-//            type 'Diagram' has zero to many type 'Relationship'
-//
-//            type 'Relationship' has one type 'Type' called 'source'
-//            type 'Relationship' has one type 'Type' called 'destination'
-//            type 'Relationship' owns one type 'RelationshipType'
-//        }
-//    }
-//
-//    @CompileStatic
-//    private static Diagram buildDiagramDiagramGrouped() {
-//        Diagram.build {
-//            note 'YUML Diagram Components'
-//
-//            // diagram should have at least one type to be meaningful, rest is optional
-//            type 'Diagram', {
-//                has one to many type 'Type'
-//                has zero to many type 'Note'
-//                has zero to many type 'Relationship'
-//            }
-//
-//            type 'Relationship', {
-//                has one type 'Type' called 'source'
-//                has one type 'Type' called 'destination'
-//                owns one type 'RelationshipType'
-//            }
-//        }
-//    }
-//
-//    @CompileStatic
-//    private static Diagram buildDiagramDiagramUsingHelperMethods() {
-//        Diagram.build { DiagramDefinition diagram ->
-//            note 'YUML Diagram Components'
-//
-//            buildDiagramRelationships(diagram)
-//            buildRelationshipRelationship(diagram)
-//        }
-//    }
-//
-//    @CompileStatic
-//    private static DiagramContentDefinition buildDiagramRelationships(DiagramDefinition diagram) {
-//        diagram.with {
-//            type 'Diagram' has one to many type 'Type'
-//            type 'Diagram' has zero to many type 'Note'
-//            type 'Diagram' has zero to many type 'Relationship'
-//        }
-//    }
-//
-//    @CompileStatic
-//    private static DiagramContentDefinition buildRelationshipRelationship(DiagramDefinition diagram) {
-//        diagram.with {
-//            type 'Relationship' has one type 'Type' called 'source'
-//            type 'Relationship' has one type 'Type' called 'destination'
-//            type 'Relationship' owns one type 'RelationshipType'
-//        }
-//    }
+/*
+    @CompileStatic
+    private static Diagram buildOrderDiagram() {
+        Diagram.build {
+            note('You can stick notes on diagrams too!', 'skyblue')
+
+            aggregation('Customer', 'Order') {
+                source '1'
+                destination '0..*', 'orders'
+            }
+
+            composition('Order', 'LineItem') {
+                source '*'
+                destination '*'
+            }
+
+            association('Order', 'DeliveryMethod') {
+                destination '1'
+            }
+
+            association('Order', 'Product') {
+                source '*'
+                destination '*'
+            }
+
+            association('Category', 'Product') {
+                bidirectional true
+            }
+
+            type 'National' inherits from type 'DeliveryMethod'
+            type'International' inherits from type 'DeliveryMethod'
+        }
+    }
+
+    @CompileStatic
+    private static Diagram buildDiagramDiagramLiteral() {
+        Diagram.build {
+            note 'YUML Diagram Components'
+
+            // diagram should have at least one type to be meaningful, rest is optional
+            type 'Diagram' has one to many type 'Type'
+            type 'Diagram' has zero to many type 'Note'
+            type 'Diagram' has zero to many type 'Relationship'
+
+            type 'Relationship' has one type 'Type' called 'source'
+            type 'Relationship' has one type 'Type' called 'destination'
+            type 'Relationship' owns one type 'RelationshipType'
+        }
+    }
+
+    @CompileStatic
+    private static Diagram buildDiagramDiagramGrouped() {
+        Diagram.build {
+            note 'YUML Diagram Components'
+
+            // diagram should have at least one type to be meaningful, rest is optional
+            type 'Diagram', {
+                has one to many type 'Type'
+                has zero to many type 'Note'
+                has zero to many type 'Relationship'
+            }
+
+            type 'Relationship', {
+                has one type 'Type' called 'source'
+                has one type 'Type' called 'destination'
+                owns one type 'RelationshipType'
+            }
+        }
+    }
+
+    // tag::dry[]
+    @CompileStatic
+    private static Diagram buildDiagramDiagramUsingHelperMethods() {
+        Diagram.build { DiagramDefinition diagram ->                                    // <1>
+            note 'YUML Diagram Components'
+
+            buildDiagramRelationships(diagram)
+            buildRelationshipRelationship(diagram)
+        }
+    }
+
+    @CompileStatic
+    private static DiagramContentDefinition buildDiagramRelationships(DiagramDefinition diagram) {
+        diagram.with {                                                                  // <2>
+            type 'Diagram' has one to many type 'Type'
+            type 'Diagram' has zero to many type 'Note'
+            type 'Diagram' has zero to many type 'Relationship'
+        }
+    }
+
+    @CompileStatic
+    private static DiagramContentDefinition buildRelationshipRelationship(DiagramDefinition diagram) {
+        diagram.with {
+            type 'Relationship' has one type 'Type' called 'source'
+            type 'Relationship' has one type 'Type' called 'destination'
+            type 'Relationship' owns one type 'RelationshipType'
+        }
+    }
+    // end::dry[]
+*/
 
 }

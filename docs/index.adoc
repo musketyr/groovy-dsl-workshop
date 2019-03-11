@@ -413,7 +413,40 @@ class DefaultDiagram implements Diagram, DiagramDefinition {
 
 == 5. Closures with Parameters
 
+So far the diagrams were described in a single long method following the code-as-data principle.
+In many situations we want to keep our code DRY ("do not repeat yourself").
+
+[source,groovy,indent=0,options="nowrap"]
+.Keeping DSL DRY
+----
+include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram05Spec.groovy[tag=dry]
+----
+<1> Send the delegate of the closure  as a parameter of the closure helps you breaking the DSL definition into smaller chunks
+<2> Using default method `with` helps you to _continue_ using the DSL even in the extracted method
+
+You need to use `@ClosureParams` annotation to help the static compiler and IDE keep track of the closure's parameters.
+
+[source,java,indent=0,options="nowrap"]
+.Diagram.java
+----
+TypeDefinition type(
+    String name,
+    @DelegatesTo(value = TypeDefinition.class, strategy = Closure.DELEGATE_FIRST)
+    @ClosureParams(value = SimpleType.class, options = "cz.orany.yuml.model.dsl.TypeDefinition")
+    Closure<? extends DiagramContentDefinition> builder
+);
+----
+
+TIP: You don't need to update the implementation classes if they still use `with` method internally
+as `with` method is already sending self as a single parameter to the closure.
+
+=== Tasks
+1. Add `@ClosureParams` annotations to the methods accepting closures and ensure the definition object is passed into the closure as a single parameter.
+2. Make `Diagram05Spec` passing
+
 == 6. Closure Pitfalls
+
+
 
 == 7. Providing Extension Points
 
