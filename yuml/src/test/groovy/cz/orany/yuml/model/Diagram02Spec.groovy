@@ -18,6 +18,7 @@ class Diagram02Spec extends Specification {
 
     void 'create orders diagram'() {
         given:
+            // tag::with[]
             Diagram diagram =  new Diagram().with {
                 note('You can stick notes on diagrams too!','skyblue')
 
@@ -50,6 +51,7 @@ class Diagram02Spec extends Specification {
 
                 it
             }
+            // end::with[]
 
         expect:
             new YumlDiagramPrinter().print(diagram).trim() == EXPECTED_DIAGRAM

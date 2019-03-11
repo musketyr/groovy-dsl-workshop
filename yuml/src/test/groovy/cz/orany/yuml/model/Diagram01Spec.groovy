@@ -23,6 +23,7 @@ class Diagram01Spec extends Specification {
 
     void 'create orders diagram'() {
         given:
+            // tag::constructors[]
             Diagram diagram =  new Diagram()
 
             diagram.notes.add(new Note(
@@ -95,6 +96,7 @@ class Diagram01Spec extends Specification {
                 destination: deliveryMethod,
                 type: RelationshipType.INHERITANCE
             ))
+            // end::constructors[]
 
         expect:
             new YumlDiagramPrinter().print(diagram).trim() == EXPECTED_DIAGRAM

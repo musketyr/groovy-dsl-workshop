@@ -12,7 +12,7 @@ We will use https://yuml.me/[yUML diagrams] (data class diagrams) as a reference
 
 This workshop is based on **Groovy DSL Builders** series which you can use as reference documentation:
 
-1. https://medium.com/@musketyr/groovy-dsl-builders-1-the-concept-2d5a97fa0a51[The Concept: The core concept of builders]
+1. https://medium.com/p/2d5a97fa0a51[The Concept: The core concept of builders]
 2. https://medium.com/p/fda1f2ebe657[The Essence: The closures' basics]
 3. https://medium.com/p/df2e9a02557a[The Aid: Using the annotations for static compilation]
 4. https://medium.com/p/1e2edc2311f8[The Disguise: Hiding the implementation of the builder API]
@@ -43,13 +43,373 @@ To get started download link:archives/groovy-dsl-workshop.zip[exercise project a
 ./gradlew dependencies
 ```
 
+You can execute tests by running following command
+
+```
+./gradlew test
+```
+
+This will execute all the tests. The tests are labeled `DiagramXXSpec` where `XX` is number of the exercise.
+Only `Diagram01Spec` passes at the beginning. Your task is to make the necessary chagnes to make the rest of the tests
+passing. Some of them will required uncommenting picese of code inside the tests but the test will tell you itself
+if uncommenting is required.
+
 == 1. Introduction
 
-== 2. Managing Relationships
+During this workshop, you are going to create DSL for https://yuml.me/[yUML.me] diagrams.
+yUML helps to create simple UML diagram online. Its simplified data model is shown in the following diagram.
+
+.YUML Diagram's Model
+image:yuml-diagram.png[yUML Diagram's Model]
+
+In this step, there is no extra work then get familiar with the codebase.
+You can inspect the implementation of the data model in `cz.orany.yuml.model` package.
+
+`Diagram` represents the diagram which can contain notes, types and their relationships.
+
+[source,groovy,indent=0,options="nowrap"]
+.Diagram.groovy
+----
+include::../yuml/src/main/groovy/cz/orany/yuml/model/Diagram.groovy[]
+----
+
+`Note` is a simple box placed next to the diagram which can have it's `text` and `color`.
+
+[source,groovy,indent=0,options="nowrap"]
+.Note.groovy
+----
+include::../yuml/src/main/groovy/cz/orany/yuml/model/Note.groovy[]
+----
+
+`Relationship` represents relationship between two types. Each relationship has
+it's `type`, `source` and `destination`. Relationships can be `bidirectional`. You can specify
+cardinality and title for the `source` and `destination`
+
+[source,groovy,indent=0,options="nowrap"]
+.Relationship.groovy
+----
+include::../yuml/src/main/groovy/cz/orany/yuml/model/Relationship.groovy[]
+----
+
+[source,groovy,indent=0,options="nowrap"]
+.RelationshipType.groovy
+----
+include::../yuml/src/main/groovy/cz/orany/yuml/model/RelationshipType.groovy[]
+----
+
+`Type` is a data class determined by it's `name`.
+
+[source,groovy,indent=0,options="nowrap"]
+.Type.groovy
+----
+include::../yuml/src/main/groovy/cz/orany/yuml/model/Type.groovy[]
+----
+
+The very first iteration uses just map constructors to create the model.
+
+[source,groovy,indent=0,options="nowrap"]
+.Creating Diagram using Constructors
+----
+include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram01Spec.groovy[tag=constructors]
+----
+
+The initial version is very verbose and there is definitely lot of place for the improvement in future steps.
+
+== 2. Managing Diagram Content
+
+The most of the verbosity of the initial example originates from manual handling
+of diagram's content - relationships, notes and types. Let's make `Diagram` class responsible for managing these items.
+
+[source,groovy,indent=0,options="nowrap"]
+.Diagram Responsible for Content Management
+----
+include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram02Spec.groovy[tag=with]
+----
+
+Methods `note`, `type` and `relationship` are now responsible for creating or referencing the particular content of the diagram.
+The example uses default Groovy method `with` simplify accessing diagram's parts properties. In the next step, we are going to
+replace method `with` with our own implementation.
+
+=== Tasks
+
+1. Implement methods `note`, `type` and `relationship` in `Diagram` class to manage diagram content.
+Methods must not create duplicates for the same input.
+2. Make `Diagram02Spec.groovy` passing.
 
 == 3. Closures
 
+In this step we are going to replace calling `with` method with custom methods.
+
+[source,groovy,indent=0,options="nowrap"]
+.Methods Accepting Closures
+----
+include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram03Spec.groovy[tag=closures]
+----
+
+You can see there are many new methods accepting closures. They all simplifies calling the
+base method `relationship` which can look like following one:
+
+[source,groovy,indent=0,options="nowrap"]
+.Methods Accepting Closures - Implementation
+----
+Relationship relationship(
+    String source,
+    RelationshipType relationshipType,
+    String destination,
+    @DelegatesTo(                                                                       // <1>
+        value = Relationship,
+        strategy = Closure.DELEGATE_FIRST
+    )
+    Closure additionalProperties = Closure.IDENTITY
+) {
+    Relationship relationship = new Relationship(
+        type(source),
+        relationshipType,
+        type(destination)
+    )
+    relationship.with additionalProperties                                              // <2>
+    this.relationships.add(relationship)
+    return relationship
+}
+----
+<1> To give the static compiler and IDE hint we need to use the annotation `@DelegatesTo` to specify which
+type will be used as a delegate of the closure. The delegate is a primary/secondary/only receiver
+of the method calls within the closure definition.
+<2> Calling the closure can be still delegated to method `with` which does exactly what we need
+
+Inheritance in the initial example is handled using a fluent DSL. Fluent DSL uses a feature called http://docs.groovy-lang.org/docs/latest/html/documentation/core-domain-specific-languages.html#_command_chains[Command Chains]
+which allows to skip the parentheses.
+
+`inherits` is just a regular method of `Type`.
+
+[source,groovy,indent=0,options="nowrap"]
+.Method `inherits`
+----
+InheritanceBuilder inherits(From from) {
+    return new InheritanceBuilder(diagram, this)
+}
+----
+
+`InheritanceBuilder` is a helper class to specify the rest of the information.`From` is just an enum
+returned from `Diagram.getFrom()` static method.
+
+[source,groovy,indent=0,options="nowrap"]
+.Class `InheritanceBuilder`
+----
+@CompileStatic
+class InheritanceBuilder {
+
+    private final Type source
+    private final Diagram diagram
+
+
+    InheritanceBuilder(Diagram diagram, Type destination) {
+        this.source = destination
+        this.diagram = diagram
+    }
+
+    Relationship type(String destination) {
+        return diagram.inheritance(source.name, destination)
+    }
+}
+----
+
+Here is another example of Fluent DSL to specify the cardinality of the items:
+
+[source,groovy,indent=0,options="nowrap"]
+.Fluent DSL
+----
+include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram03Spec.groovy[tag=fluent]
+----
+
+=== Tasks
+1. Implement method accepting closures for building relationships
+2. Implement method accepting closures as shortcuts for each relationship type
+3. Implement fluent DSL for describing inheritance
+4. Implement fluent DSL for describing cardinality and title
+5. Make `Diagram03Spec` passing
+
 == 4. API Extraction
+
+Well-crafted DSL should only expose as many feature as required. At this step, your `Diagram`
+class should expose methods for adding new parts of the diagram as well as the accessors methods.
+
+Let's split the API into two separate categories, each described using Java interfaces.
+
+1. API for reading diagram's content
+2. API for creating diagram's content
+
+`Diagram` interface will only contain methods to access the content of the diagram:
+
+[source,java,indent=0,options="nowrap"]
+.Diagram.java
+----
+public interface Diagram {
+
+    static Diagram build(@DelegatesTo(value = DiagramDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure definition) {
+        return DefaultDiagramFactory.build(definition);
+    }
+
+    Collection<? extends Note> getNotes();
+    Collection<? extends Type> getTypes();
+    Collection<? extends Relationship> getRelationships();
+
+}
+----
+
+`DiagramDefinition` will only contain methods for building the diagram's content
+
+[source,java,indent=0,options="nowrap"]
+.DiagramDefintion.java
+----
+public interface DiagramDefinition {
+
+    static From getFrom() {
+        return From.FROM;
+    }
+
+    static Integer getZero() {
+        return 0;
+    }
+
+    static Integer getOne() {
+        return 1;
+    }
+
+    static String getMany() {
+        return "*";
+    }
+
+    default Note note(String text) {
+        return note(text, null);
+    }
+
+    Note note(String text, String color);
+
+    default TypeDefinition type(String name) {
+        return type(name, Closure.IDENTITY);
+    }
+
+    TypeDefinition type(String name, @DelegatesTo(value = TypeDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure builder);
+
+    default RelationshipDefinition aggregation(String source, String destination) {
+        return aggregation(source, destination, Closure.IDENTITY);
+    }
+
+    default RelationshipDefinition aggregation(
+        String source,
+        String destination,
+        @DelegatesTo(value = RelationshipDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
+    ) {
+        return relationship(source, RelationshipType.AGGREGATION, destination, additionalProperties);
+    }
+
+    default RelationshipDefinition composition(String source, String destination) {
+        return composition(source, destination, Closure.IDENTITY);
+    }
+
+    default RelationshipDefinition composition(
+        String source,
+        String destination,
+        @DelegatesTo(value = RelationshipDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
+    ) {
+        return relationship(source, RelationshipType.COMPOSITION, destination, additionalProperties);
+    }
+
+    default RelationshipDefinition inheritance(
+        String source,
+        String destination
+    ) {
+        return inheritance(source, destination, Closure.IDENTITY);
+    }
+
+    default RelationshipDefinition inheritance(
+        String source,
+        String destination,
+        @DelegatesTo(value = RelationshipDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
+    ) {
+        return relationship(source, RelationshipType.INHERITANCE, destination, additionalProperties);
+    }
+
+    default RelationshipDefinition association(String source, String destination) {
+        return association(source, destination, Closure.IDENTITY);
+    }
+
+    default RelationshipDefinition association(
+        String source,
+        String destination,
+        @DelegatesTo(value = RelationshipDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
+    ) {
+        return relationship(source, RelationshipType.ASSOCIATION, destination, additionalProperties);
+    }
+
+    default RelationshipDefinition relationship(String source, RelationshipType relationshipType, String destination) {
+        return relationship(source, relationshipType, destination, Closure.IDENTITY);
+    }
+
+    RelationshipDefinition relationship(
+        String source,
+        RelationshipType relationshipType,
+        String destination,
+        @DelegatesTo(value = RelationshipDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
+    );
+
+}
+----
+
+You can see we are fully leveraging features added in Java 8 such as static and default methods in interfaces.
+Thanks to these features the implementation is pretty minimal:
+
+[source,java,indent=0,options="nowrap"]
+.DefaultDiagram.groovy
+----
+class DefaultDiagram implements Diagram, DiagramDefinition {
+
+    final Collection<DefaultNote> notes = new LinkedHashSet<>()
+    final Collection<DefaultRelationship> relationships = new LinkedHashSet<>()
+
+    private final Map<String, DefaultType> typesMap = [:].withDefault { key -> new DefaultType(this, key.toString()) }
+
+    @Override
+    Collection<? extends Type> getTypes() {
+        return typesMap.values()
+    }
+
+    @Override
+    DefaultNote note(String text, String color) {
+        Note note = new DefaultNote(text, color)
+        this.notes.add(note)
+        return note
+    }
+
+    @Override
+    DefaultType type(String name, @DelegatesTo(value = TypeDefinition, strategy = Closure.DELEGATE_FIRST) Closure builder) {
+        DefaultType type = typesMap[name]
+        type.with builder
+        return type
+    }
+
+    @Override
+    DefaultRelationship relationship(
+        String source,
+        RelationshipType relationshipType,
+        String destination,
+        @DelegatesTo(value = RelationshipDefinition, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
+    ) {
+        DefaultRelationship relationship = new DefaultRelationship(type(source, Closure.IDENTITY), relationshipType, type(destination, Closure.IDENTITY))
+        relationship.with additionalProperties
+        this.relationships.add(relationship)
+        return relationship
+    }
+
+}
+----
+
+=== Tasks
+1. Extract content (accessors) API from the current `Diagram`, `Relationship`, `Type` classes into interfaces of he same name
+2. Extract builder API from the current `Diagram`, `Relationship`, `Type` classes into into interfaces ending `Definition`
+3. Put the implementation into classes with `Default` prefix
+4. Make `Diagram04Spec` passing
 
 == 5. Closures with Parameters
 
