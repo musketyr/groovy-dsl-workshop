@@ -446,11 +446,259 @@ as `with` method is already sending self as a single parameter to the closure.
 
 == 6. Closure Pitfalls
 
+There are some common misunderstandings when we use closures, especially when the closures are nested one into another.
 
+Let's take a look on a typical example of nested closures. Assume that all the methods set the resolution strategy to
+`DELEGATE_FIRST`
+
+[source,groovy,indent=0,options="nowrap"]
+.Nested Closures
+----
+    String someProperty = 'Some Property Content'                                       // <1>
+
+    void doBuild() {
+        new SomeBuilder().levelOne {                                                    // <2>
+            levelTwo {                                                                  // <3>
+                something = someProperty                                                // <4>
+            }
+        }
+    }
+----
+<1> A class has a property which we would like to access from the nested closure
+<2> First closure definition - the closure's `owner` is instance of our class
+<3> Second closure definition - the closure's `owner` is the surrounding closure
+<4> One would expect that `someProperty` is the `someProperty` we declared in our class but as the `owner` of the
+closure is the surrounding closure with its own complicated property handling we might be actually reading property
+`someProperty` of the delegate of the surrounding closure.
+
+To workaround this problem we need to manually keep track of the `owner` of the top level closure. We can achieve this
+by updating the `DefaultDiagram` class to also hold the `owner`.
+
+[source,groovy,indent=0,options="nowrap"]
+.Creating Diagram using Constructors
+----
+class DefaultDiagram implements Diagram, DiagramDefinition {
+
+    private final Object owner;
+
+    // other fields
+
+    DefaultDiagram(Object owner) {                                                      // <1>
+        this.owner = owner
+    }
+
+    // other methods
+
+    @Override
+    DefaultType type(
+        String name,
+        @DelegatesTo(
+            value = TypeDefinition.class,
+            strategy = Closure.DELEGATE_FIRST
+        )
+        @ClosureParams(
+            value = SimpleType.class,
+            options = "cz.orany.yuml.model.dsl.TypeDefinition"
+        )
+        Closure<? extends DiagramContentDefinition> builder
+    ) {
+        DefaultType type = typesMap[name]
+        withSameOwner type, builder                                                     // <2>
+        return type
+    }
+
+    protected <V, T> V withSameOwner(T self, Closure<V> closure) {
+        final Closure<V> clonedClosure = closure.rehydrate(                             // <3>
+            self,
+            owner,
+            closure.thisObject
+        )
+        clonedClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        clonedClosure.call(self)
+    }
+}
+----
+<1> The `DefaultDiagram` now must be constructed with the reference to the surrounding closure's `owner`
+<2> We no longer use default `with` method but slightly updated one which also replaces the `owner` with expected one
+<3> We use closure's method `rehydrate` to create a clone with expected `owner`
+
+=== Tasks
+1. Make sure all method accepting closures properly handles the owner
+2. Make `Diagram06Spec` passing
 
 == 7. Providing Extension Points
 
+A good DSL provides an extension points which allows the developers to extend the language. In our yUML example some
+developers might want to add attribute definitions to the types or declare types as stereotypes.
+
+[source,groovy,indent=0,options="nowrap"]
+.Extensions
+----
+include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram07Spec.groovy[tag=extensions]
+----
+<1> Stereotype declaration
+<2> Property declaration
+
+The easiest way how to start extending any DSL is using Groovy's extension classes. Extension classes contains
+static methods which first argument is of the type we want to extend.
+
+For example `stereotype` can be easily handled by calling `type` with the name surrounded by `<<` and `>>`.
+
+[source,groovy,indent=0,options="nowrap"]
+.Stereoptypes Extension
+----
+public class StereotypeExtensions {
+
+    public static TypeDefinition stereotype(
+        DiagramDefinition diagram,
+        String name
+    ) {
+        return diagram.type("<<" + name + ">>");
+    }
+
+    // other extension methods
+
+}
+----
+
+To enable the class as extension module you need to create a file `META-INF/services/org.codehaus.groovy.runtime.ExtensionModule` with the following content:
+
+.Extensions Declaration
+----
+moduleName=yuml-extra
+moduleVersion=0.1.0
+extensionClasses=cz.orany.yuml.stereotype.StereotypeExtensions
+staticExtensionClasses=
+----
+
+For more complicated extensions we can introduce some generic container such as `Map<String, Object> metadata`
+into the diagram class which we can manipulate using _helper_ objects:
+
+[source,java,indent=0,options="nowrap"]
+.Metadata Helpers
+----
+@Override
+public <H extends DiagramHelper, R> H configure(
+    @DelegatesTo.Target("helper")
+    Class<H> helper,
+    @DelegatesTo(
+        value = DelegatesTo.Target.class,
+        target = "helper",
+        strategy = Closure.DELEGATE_FIRST,
+        genericTypeIndex = 0
+    )
+    @ClosureParams(FirstParam.FirstGenericType.class)
+    Closure<R> configuration
+) {
+    H helperInstance = (H) helperMap.computeIfAbsent(helper, {
+        helper.newInstance()
+    })
+    DefaultGroovyMethods.with(helperInstance, configuration)
+    return helperInstance
+}
+
+void postprocess() {
+    for (DiagramHelper helper : helperMap.values()) {
+        metadata.putAll(helper.metadata)
+    }
+}
+----
+
+We can use these helpers in another extension class to store the properties:
+
+[source,groovy,indent=0,options="nowrap"]
+.Properties Extension
+----
+CompileStatic
+class PropertiesDiagramHelperExtensions {
+
+    static TypeDefinition property(
+        TypeDefinition typeDefinition,
+        String type,
+        String name
+    ) {
+        typeDefinition
+            .diagramDefinition
+            .configure(PropertiesDiagramHelper) {
+                it.addProperty(typeDefinition.name, type, name)
+            }
+        return typeDefinition
+    }
+
+    static TypeDefinition property(
+        TypeDefinition typeDefinition,
+        Map<String, String> properties
+    ) {
+        typeDefinition
+            .diagramDefinition
+            .configure(PropertiesDiagramHelper) {
+            it.addProperties(typeDefinition.name, properties)
+        }
+        return typeDefinition
+    }
+}
+----
+
+=== Tasks
+1. Create extension to support `stereotype`
+2. Create extension to support `properties`
+3. Make `Diagram07Spec` passing
+
 == 8. Java DSL
+
+As DSL creator, you will probably want to reach the widest audience possible. Plain old Java is still
+far more popular then Groovy. Rewriting your DSL into Java will help you to attract more developers who don't want or
+simply can't use Groovy as their primary language.
+
+Java 8 supports lambda expression which looks quite similar to Groovy closures but it lacks the ablity
+to alter the delegate. `Consumer`interface can be easily used instead of closures for most of the
+situations.
+
+[source,java,indent=0,options="nowrap"]
+.Diagram08Test.java
+----
+include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram08Test.java[tag=java]
+----
+
+The significant difference is the presence of the callee as `Diagram d` which is passed inside the lambda
+body.
+
+I consider a good practise to keep the Groovy code separated inside extension methods which will look like
+the original ones except the accept the original type as a first argument:
+
+[source,java,indent=0,options="nowrap"]
+.Extension method inside DiagramExtensions.java
+----
+public static RelationshipDefinition relationship(
+    DiagramDefinition self,
+    String source,
+    RelationshipType relationshipType,
+    String destination,
+    @DelegatesTo(
+        value = RelationshipDefinition.class,
+        strategy = Closure.DELEGATE_FIRST
+    )
+    @ClosureParams(
+        value = SimpleType.class,
+        options = "cz.orany.yuml.model.dsl.RelationshipDefinition"
+    )
+    Closure<? extends DiagramContentDefinition> additionalProperties
+) {
+    return self.relationship(
+        source,
+        relationshipType,
+        destination,
+        ConsumerWithDelegate.create(additionalProperties)
+    );
+}
+----
+
+`ConsumerWithDelegate` comes from Groovy Closure Support library which provides couple of
+helper wrappers for closures and popular `java.util.function.` types.
+
+=== Tasks
+1. Rewrite your DSL into Java
+2. Make `Diagram08Spec` and `Diagram08Test` passing
 
 == 9. Named Arguments
 

@@ -17,35 +17,39 @@ public class Diagram08Test {
     }
 
     private Diagram buildDiagram() {
-//        return Diagram.create(d -> {
-//            d.note("You can stick notes on diagrams too!", "skyblue");
-//
-//            d.aggregation("Customer", "Order", r -> {
-//                r.source("1");
-//                r.destination("0..*", "orders");
-//            });
-//
-//            d.composition("Order", "LineItem", r -> {
-//                r.source("*");
-//                r.destination("*");
-//            });
-//
-//            d.association("Order", "DeliveryMethod", r -> {
-//                r.destination("1");
-//            });
-//
-//            d.association("Order", "Product", r -> {
-//                r.source("*");
-//                r.destination("*");
-//            });
-//
-//            d.association("Category", "Product", r -> {
-//                r.bidirectional(true);
-//            });
-//
-//            d.type("National").inherits(from).type("DeliveryMethod");
-//            d.type("International").inherits(from).type("DeliveryMethod");
-//        });
+/*
+        // tag::java[]
+        return Diagram.create(d -> {
+            d.note("You can stick notes on diagrams too!", "skyblue");
+
+            d.aggregation("Customer", "Order", r -> {
+                r.source("1");
+                r.destination("0..*", "orders");
+            });
+
+            d.composition("Order", "LineItem", r -> {
+                r.source("*");
+                r.destination("*");
+            });
+
+            d.association("Order", "DeliveryMethod", r -> {
+                r.destination("1");
+            });
+
+            d.association("Order", "Product", r -> {
+                r.source("*");
+                r.destination("*");
+            });
+
+            d.association("Category", "Product", r -> {
+                r.bidirectional(true);
+            });
+
+            d.type("National").inherits(from).type("DeliveryMethod");
+            d.type("International").inherits(from).type("DeliveryMethod");
+        });
+        // end::java[]
+*/
         return null; // delete this line
     }
 

@@ -80,163 +80,167 @@ class Diagram07Spec extends Specification {
             'diagram with stereotypes'      | buildDiagramStereotypes()               | EXPECTED_DIAGRAM_STEROTYPES
             'diagram with properties'       | buildDiagramProperties()                | EXPECTED_DIAGRAM_PROPERTIES
     }
-//
-//    @CompileStatic
-//    private static Diagram buildOrderDiagram() {
-//        Diagram.build {
-//            note('You can stick notes on diagrams too!', 'skyblue')
-//
-//            aggregation('Customer', 'Order') {
-//                source '1'
-//                destination '0..*', 'orders'
-//            }
-//
-//            composition('Order', 'LineItem') {
-//                source '*'
-//                destination '*'
-//            }
-//
-//            association('Order', 'DeliveryMethod') {
-//                destination '1'
-//            }
-//
-//            association('Order', 'Product') {
-//                source '*'
-//                destination '*'
-//            }
-//
-//            association('Category', 'Product') {
-//                bidirectional true
-//            }
-//
-//            type 'National' inherits from type 'DeliveryMethod'
-//            type'International' inherits from type 'DeliveryMethod'
-//        }
-//    }
-//
-//    @CompileStatic
-//    private static Diagram buildDiagramDiagramLiteral() {
-//        Diagram.build {
-//            note 'YUML Diagram Components'
-//
-//            // diagram should have at least one type to be meaningful, rest is optional
-//            type 'Diagram' has one to many type 'Type'
-//            type 'Diagram' has zero to many type 'Note'
-//            type 'Diagram' has zero to many type 'Relationship'
-//
-//            type 'Relationship' has one type 'Type' called 'source'
-//            type 'Relationship' has one type 'Type' called 'destination'
-//            type 'Relationship' owns one type 'RelationshipType'
-//        }
-//    }
-//
-//    @CompileStatic
-//    private static Diagram buildDiagramDiagramGrouped() {
-//        Diagram.build {
-//            note 'YUML Diagram Components'
-//
-//            // diagram should have at least one type to be meaningful, rest is optional
-//            type 'Diagram', {
-//                has one to many type 'Type'
-//                has zero to many type 'Note'
-//                has zero to many type 'Relationship'
-//            }
-//
-//            type 'Relationship', {
-//                has one type 'Type' called 'source'
-//                has one type 'Type' called 'destination'
-//                owns one type 'RelationshipType'
-//            }
-//        }
-//    }
-//
-//    @CompileStatic
-//    private static Diagram buildDiagramDiagramUsingHelperMethods() {
-//        Diagram.build { DiagramDefinition diagram ->
-//            note 'YUML Diagram Components'
-//
-//            buildDiagramRelationships(diagram)
-//            buildRelationshipRelationship(diagram)
-//        }
-//    }
-//
-//    @CompileStatic
-//    private static DiagramContentDefinition buildDiagramRelationships(DiagramDefinition diagram) {
-//        diagram.with {
-//            type 'Diagram' has one to many type 'Type'
-//            type 'Diagram' has zero to many type 'Note'
-//            type 'Diagram' has zero to many type 'Relationship'
-//        }
-//    }
-//
-//    @CompileStatic
-//    private static DiagramContentDefinition buildRelationshipRelationship(DiagramDefinition diagram) {
-//        diagram.with {
-//            type 'Relationship' has one type 'Type' called 'source'
-//            type 'Relationship' has one type 'Type' called 'destination'
-//            type 'Relationship' owns one type 'RelationshipType'
-//        }
-//    }
-//
-//    @CompileStatic
-//    private static Diagram buildDiagramWithInternalMethodCalls() {
-//        Diagram.build {
-//            note 'YUML Diagram Components'
-//
-//            // diagram should have at least one type to be meaningful, rest is optional
-//            type 'Diagram', {
-//                has one to many type 'Type'
-//                has zero to many type notes
-//                has zero to many type 'Relationship'
-//            }
-//
-//            type 'Relationship', {
-//                has one type 'Type' called 'source'
-//                has one type 'Type' called 'destination'
-//                owns one type 'RelationshipType'
-//            }
-//        }
-//    }
-//
-//    @CompileStatic
-//    private static Diagram buildDiagramStereotypes() {
-//        Diagram.build {
-//            note 'YUML Diagram Components'
-//
-//            // diagram should have at least one stereotype to be meaningful, rest is optional
-//            stereotype 'Diagram' has one to many stereotype 'Type'
-//            stereotype 'Diagram' has zero to many stereotype 'Note'
-//            stereotype 'Diagram' has zero to many stereotype 'Relationship'
-//
-//            stereotype 'Relationship' has one stereotype 'Type' called 'source'
-//            stereotype 'Relationship' has one stereotype 'Type' called 'destination'
-//            stereotype 'Relationship' owns one stereotype 'RelationshipType'
-//        }
-//    }
-//
-//    @CompileStatic
-//    private static Diagram buildDiagramProperties() {
-//        Diagram.build {
-//            note 'YUML Diagram Components'
-//
-//            // diagram should have at least one type to be meaningful, rest is optional
-//            type 'Diagram', {
-//                has one to many type 'Type'
-//                has zero to many type notes
-//                has zero to many type 'Relationship'
-//            }
-//
-//            type 'Relationship', {
-//                has one type 'Type' called 'source'
-//                has one type 'Type' called 'destination'
-//                owns one type 'RelationshipType'
-//            }
-//
-//            type 'Type', {
-//                property name: 'string'
-//            }
-//        }
-//    }
+
+/*
+    @CompileStatic
+    private static Diagram buildOrderDiagram() {
+        Diagram.build {
+            note('You can stick notes on diagrams too!', 'skyblue')
+
+            aggregation('Customer', 'Order') {
+                source '1'
+                destination '0..*', 'orders'
+            }
+
+            composition('Order', 'LineItem') {
+                source '*'
+                destination '*'
+            }
+
+            association('Order', 'DeliveryMethod') {
+                destination '1'
+            }
+
+            association('Order', 'Product') {
+                source '*'
+                destination '*'
+            }
+
+            association('Category', 'Product') {
+                bidirectional true
+            }
+
+            type 'National' inherits from type 'DeliveryMethod'
+            type'International' inherits from type 'DeliveryMethod'
+        }
+    }
+
+    @CompileStatic
+    private static Diagram buildDiagramDiagramLiteral() {
+        Diagram.build {
+            note 'YUML Diagram Components'
+
+            // diagram should have at least one type to be meaningful, rest is optional
+            type 'Diagram' has one to many type 'Type'
+            type 'Diagram' has zero to many type 'Note'
+            type 'Diagram' has zero to many type 'Relationship'
+
+            type 'Relationship' has one type 'Type' called 'source'
+            type 'Relationship' has one type 'Type' called 'destination'
+            type 'Relationship' owns one type 'RelationshipType'
+        }
+    }
+
+    @CompileStatic
+    private static Diagram buildDiagramDiagramGrouped() {
+        Diagram.build {
+            note 'YUML Diagram Components'
+
+            // diagram should have at least one type to be meaningful, rest is optional
+            type 'Diagram', {
+                has one to many type 'Type'
+                has zero to many type 'Note'
+                has zero to many type 'Relationship'
+            }
+
+            type 'Relationship', {
+                has one type 'Type' called 'source'
+                has one type 'Type' called 'destination'
+                owns one type 'RelationshipType'
+            }
+        }
+    }
+
+    @CompileStatic
+    private static Diagram buildDiagramDiagramUsingHelperMethods() {
+        Diagram.build { DiagramDefinition diagram ->
+            note 'YUML Diagram Components'
+
+            buildDiagramRelationships(diagram)
+            buildRelationshipRelationship(diagram)
+        }
+    }
+
+    @CompileStatic
+    private static DiagramContentDefinition buildDiagramRelationships(DiagramDefinition diagram) {
+        diagram.with {
+            type 'Diagram' has one to many type 'Type'
+            type 'Diagram' has zero to many type 'Note'
+            type 'Diagram' has zero to many type 'Relationship'
+        }
+    }
+
+    @CompileStatic
+    private static DiagramContentDefinition buildRelationshipRelationship(DiagramDefinition diagram) {
+        diagram.with {
+            type 'Relationship' has one type 'Type' called 'source'
+            type 'Relationship' has one type 'Type' called 'destination'
+            type 'Relationship' owns one type 'RelationshipType'
+        }
+    }
+
+    @CompileStatic
+    private static Diagram buildDiagramWithInternalMethodCalls() {
+        Diagram.build {
+            note 'YUML Diagram Components'
+
+            // diagram should have at least one type to be meaningful, rest is optional
+            type 'Diagram', {
+                has one to many type 'Type'
+                has zero to many type notes
+                has zero to many type 'Relationship'
+            }
+
+            type 'Relationship', {
+                has one type 'Type' called 'source'
+                has one type 'Type' called 'destination'
+                owns one type 'RelationshipType'
+            }
+        }
+    }
+
+    // tag::extensions[]
+    @CompileStatic
+    private static Diagram buildDiagramStereotypes() {
+        Diagram.build {
+            note 'YUML Diagram Components'
+
+            // diagram should have at least one stereotype to be meaningful, rest is optional
+            stereotype 'Diagram' has one to many stereotype 'Type'                      // <1>
+            stereotype 'Diagram' has zero to many stereotype 'Note'
+            stereotype 'Diagram' has zero to many stereotype 'Relationship'
+
+            stereotype 'Relationship' has one stereotype 'Type' called 'source'
+            stereotype 'Relationship' has one stereotype 'Type' called 'destination'
+            stereotype 'Relationship' owns one stereotype 'RelationshipType'
+        }
+    }
+
+    @CompileStatic
+    private static Diagram buildDiagramProperties() {
+        Diagram.build {
+            note 'YUML Diagram Components'
+
+            // diagram should have at least one type to be meaningful, rest is optional
+            type 'Diagram', {
+                has one to many type 'Type'
+                has zero to many type notes
+                has zero to many type 'Relationship'
+            }
+
+            type 'Relationship', {
+                has one type 'Type' called 'source'
+                has one type 'Type' called 'destination'
+                owns one type 'RelationshipType'
+            }
+
+            type 'Type', {
+                property name: 'string'                                                 // <2>
+            }
+        }
+    }
+    // end::extensions[]
+*/
 
     private static String getNotes() {
         return 'Note'
