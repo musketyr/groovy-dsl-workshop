@@ -100,11 +100,11 @@ asciidoctor {
             icons: 'font',
             'toc': 'left',
             version: project.version,
-            'projectUrl': 'https://github.com/musketyr/excel-in-groovy'
+            'projectUrl': 'https://github.com/musketyr/groovy-dsl-workshop'
 }
 
 githubPages {
-    repoUri = 'https://github.com/musketyr/groovy-dsl-workshop'
+    repoUri = 'git@github.com:musketyr/groovy-dsl-workshop.git'
 
     credentials {
         username = getPropertyOrUseDefault('githubToken', '')
