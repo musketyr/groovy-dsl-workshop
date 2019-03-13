@@ -457,33 +457,16 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_tasks_3">Tasks</a></li>
 </ul>
 </li>
-<li><a href="#_4_api_extraction">4. API Extraction</a>
+<li><a href="#_4_designing_for_extendability">4. Designing for Extendability</a>
 <ul class="sectlevel2">
 <li><a href="#_tasks_4">Tasks</a></li>
 </ul>
 </li>
-<li><a href="#_5_closures_with_parameters">5. Closures with Parameters</a>
+<li><a href="#_5_api_clean_up">5. API Clean Up</a>
 <ul class="sectlevel2">
 <li><a href="#_tasks_5">Tasks</a></li>
 </ul>
 </li>
-<li><a href="#_6_closure_pitfalls">6. Closure Pitfalls</a>
-<ul class="sectlevel2">
-<li><a href="#_tasks_6">Tasks</a></li>
-</ul>
-</li>
-<li><a href="#_7_providing_extension_points">7. Providing Extension Points</a>
-<ul class="sectlevel2">
-<li><a href="#_tasks_7">Tasks</a></li>
-</ul>
-</li>
-<li><a href="#_8_java_dsl">8. Java DSL</a>
-<ul class="sectlevel2">
-<li><a href="#_tasks_8">Tasks</a></li>
-</ul>
-</li>
-<li><a href="#_9_named_arguments">9. Named Arguments</a></li>
-<li><a href="#_solutions">Solutions</a></li>
 </ul>
 </div>
 </div>
@@ -1213,191 +1196,251 @@ The restriction does not apply on the instance methods.
 </div>
 </div>
 <div class="sect1">
-<h2 id="_4_api_extraction">4. API Extraction</h2>
+<h2 id="_4_designing_for_extendability">4. Designing for Extendability</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Well-crafted DSL should only expose as many feature as required. At this step, your <code>Diagram</code>
-class should expose methods for adding new parts of the diagram as well as the accessors methods.</p>
+<p>A good DSL is open and provides enough extension points to allow developers to extend the original functionality.</p>
 </div>
 <div class="paragraph">
-<p>Let&#8217;s split the API into two separate categories, each described using Java interfaces.</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>API for reading diagram&#8217;s content</p>
-</li>
-<li>
-<p>API for creating diagram&#8217;s content</p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p><code>Diagram</code> interface will only contain methods to access the content of the diagram:</p>
+<p>For example, some developers would like to add support for stereotypes and properties.</p>
 </div>
 <div class="listingblock">
-<div class="title">Diagram.java</div>
+<div class="title">Groovy Version of the DSL</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">public interface Diagram {
+<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">@CompileStatic
+private static Diagram buildDiagramStereotypesAndProperties() {
+    Diagram.build { Diagram d -&gt;
+        note('You can stick notes on diagrams too!', 'skyblue')
 
-    static Diagram build(@DelegatesTo(value = DiagramDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure definition) {
-        return DefaultDiagramFactory.build(definition);
+        aggregation('Customer', 'Order') {
+            source cardinality: '1'
+            destination cardinality: '0..*', title: 'orders'
+        }
+
+        buildOrderTypes(d)
+
+        association('Category', 'Product') {
+            bidirectional true
+        }
+
+        type 'National' inherits from stereotype 'DeliveryMethod'                   <i class="conum" data-value="1"></i><b>(1)</b>
+        type 'International' inherits from stereotype 'DeliveryMethod'
+
+        type('Customer') {
+            property 'string', 'name'                                               <i class="conum" data-value="2"></i><b>(2)</b>
+        }
     }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Declaring a stereotype</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Declaring type&#8217;s properties</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Adding support for stereotype is pretty simple. Stereotype is just a type surrounded by <code>&lt;&lt;</code> and <code>&gt;&gt;</code>. We can achieve this
+directly in the extension class.</p>
+</div>
+<div class="listingblock">
+<div class="title">Stereotype Extensions</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">public static Type stereotype(Diagram self, String name) {
+    return self.type("&lt;&lt;" + name + "&gt;&gt;");
+}
 
-    Collection&lt;? extends Note&gt; getNotes();
-    Collection&lt;? extends Type&gt; getTypes();
-    Collection&lt;? extends Relationship&gt; getRelationships();
+public static Relationship stereotype(InheritanceBuilder self, String name) {
+    return self.type("&lt;&lt;" + name + "&gt;&gt;");
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Adding support for the properties requires more steps. First we need to declare an interface for <em>helper</em>
+objects which can gather the metadata for diagram.</p>
+</div>
+<div class="listingblock">
+<div class="title">Diagram Helper</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">package cz.orany.yuml.model;
+
+import java.util.Map;
+
+public interface DiagramHelper {
+
+    Map&lt;String, Object&gt; getMetadata();
 
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>DiagramDefinition</code> will only contain methods for building the diagram&#8217;s content</p>
+<p>These helpers can be added to the diagram and they simplifies access to the generic <code>metadata</code> map:</p>
 </div>
 <div class="listingblock">
-<div class="title">DiagramDefintion.java</div>
+<div class="title">Diagram Helpers and Metadata</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">public interface DiagramDefinition {
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">public static Diagram create(Consumer&lt;Diagram&gt; diagramConsumer) {
+    Diagram diagram = new Diagram();
+    diagramConsumer.accept(diagram);
+    diagram.postprocess();                                                          <i class="conum" data-value="1"></i><b>(1)</b>
+    return diagram;
+}
 
-    static From getFrom() {
-        return From.FROM;
+public Map&lt;String, Object&gt; getMetadata() {                                          <i class="conum" data-value="2"></i><b>(2)</b>
+    return metadata;
+}
+
+public &lt;H extends DiagramHelper, R&gt; R configure(                                    <i class="conum" data-value="3"></i><b>(3)</b>
+        Class&lt;H&gt; helper,
+        Function&lt;H, R&gt; configurationOrQuery
+) {
+    H helperInstance = (H) helperMap.computeIfAbsent(helper, (h) -&gt; {
+        try {
+            return (DiagramHelper) h.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new IllegalArgumentException("Cannot instantiate " + h, e);
+        }
+    });
+
+    return configurationOrQuery.apply(helperInstance);
+}
+
+void postprocess() {                                                                <i class="conum" data-value="4"></i><b>(4)</b>
+    for (DiagramHelper helper : helperMap.values()) {
+        metadata.putAll(helper.getMetadata());
+    }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Method <code>postprocess</code> is called when the build phase of the DSL is finished</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Metadata are just a generic map with string keys</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Method <code>configure</code> instantiates or reuses existing helper instance and executes some code on helper instance and returns the result</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Method <code>postprocess</code> iterates all the existing helpers and gathers the metadata</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Now we can create a helper to store the metadata for given type:</p>
+</div>
+<div class="listingblock">
+<div class="title">Properites Helper</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">package cz.orany.yuml.model;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+public class PropertiesDiagramHelper implements DiagramHelper {
+
+    private static final String METADATA_KEY
+            = "cz.orany.yuml.properties.PropertiesDiagramHelper.typeToProperties";
+
+    private final Map&lt;String, Map&lt;String, String&gt;&gt; typeToProperties                     <i class="conum" data-value="1"></i><b>(1)</b>
+            = new LinkedHashMap&lt;&gt;();
+
+    public PropertiesDiagramHelper addProperty(String owner, String type, String name) {<i class="conum" data-value="2"></i><b>(2)</b>
+        Map&lt;String, String&gt; properties = typeToProperties.computeIfAbsent(
+                owner, (key) -&gt; new LinkedHashMap&lt;&gt;()
+        );
+
+        properties.put(name, type);
+
+        return this;
     }
 
-    static Integer getZero() {
-        return 0;
+    @Override
+    public Map&lt;String, Object&gt; getMetadata() {
+        return Collections.singletonMap(METADATA_KEY, typeToProperties);                <i class="conum" data-value="3"></i><b>(3)</b>
     }
 
-    static Integer getOne() {
-        return 1;
+    @SuppressWarnings("unchecked")
+    public static Map&lt;String, String&gt; getProperties(Diagram diagram, Type type) {       <i class="conum" data-value="4"></i><b>(4)</b>
+        Map&lt;String, Map&lt;String, String&gt;&gt; typeToProperties = (Map&lt;String, Map&lt;String, String&gt;&gt;) diagram
+                .getMetadata()
+                .computeIfAbsent(METADATA_KEY, (key) -&gt; new LinkedHashMap&lt;&gt;());
+        return typeToProperties.computeIfAbsent(type.getName(), (key) -&gt; new LinkedHashMap&lt;&gt;());
     }
-
-    static String getMany() {
-        return "*";
-    }
-
-    default Note note(String text) {
-        return note(text, null);
-    }
-
-    Note note(String text, String color);
-
-    default TypeDefinition type(String name) {
-        return type(name, Closure.IDENTITY);
-    }
-
-    TypeDefinition type(String name, @DelegatesTo(value = TypeDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure builder);
-
-    default RelationshipDefinition aggregation(String source, String destination) {
-        return aggregation(source, destination, Closure.IDENTITY);
-    }
-
-    default RelationshipDefinition aggregation(
-        String source,
-        String destination,
-        @DelegatesTo(value = RelationshipDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
-    ) {
-        return relationship(source, RelationshipType.AGGREGATION, destination, additionalProperties);
-    }
-
-    default RelationshipDefinition composition(String source, String destination) {
-        return composition(source, destination, Closure.IDENTITY);
-    }
-
-    default RelationshipDefinition composition(
-        String source,
-        String destination,
-        @DelegatesTo(value = RelationshipDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
-    ) {
-        return relationship(source, RelationshipType.COMPOSITION, destination, additionalProperties);
-    }
-
-    default RelationshipDefinition inheritance(
-        String source,
-        String destination
-    ) {
-        return inheritance(source, destination, Closure.IDENTITY);
-    }
-
-    default RelationshipDefinition inheritance(
-        String source,
-        String destination,
-        @DelegatesTo(value = RelationshipDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
-    ) {
-        return relationship(source, RelationshipType.INHERITANCE, destination, additionalProperties);
-    }
-
-    default RelationshipDefinition association(String source, String destination) {
-        return association(source, destination, Closure.IDENTITY);
-    }
-
-    default RelationshipDefinition association(
-        String source,
-        String destination,
-        @DelegatesTo(value = RelationshipDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
-    ) {
-        return relationship(source, RelationshipType.ASSOCIATION, destination, additionalProperties);
-    }
-
-    default RelationshipDefinition relationship(String source, RelationshipType relationshipType, String destination) {
-        return relationship(source, relationshipType, destination, Closure.IDENTITY);
-    }
-
-    RelationshipDefinition relationship(
-        String source,
-        RelationshipType relationshipType,
-        String destination,
-        @DelegatesTo(value = RelationshipDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Properties for each type are held in a map</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Adds a property to the given type</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Returns the metadata provided by this helper - the map of the types and their properties</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Returns the properties of given type</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Now we have finally everything to add the method for adding type&#8217;s properties. This is also implemented as extension method:</p>
+</div>
+<div class="listingblock">
+<div class="title">Property Extensions</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">public static Type property(Type typeDefinition, String type, String name) {
+    typeDefinition.getDiagram().configure(PropertiesDiagramHelper.class, (h) -&gt;
+        h.addProperty(typeDefinition.getName(), type, name)
     );
-
+    return typeDefinition;
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>You can see we are fully leveraging features added in Java 8 such as static and default methods in interfaces.
-Thanks to these features the implementation is pretty minimal:</p>
+<p>The last step is to update the class responsible for printing the diagram to take the properties into an account:</p>
 </div>
 <div class="listingblock">
-<div class="title">DefaultDiagram.groovy</div>
+<div class="title">YUML Priter with Properties</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">class DefaultDiagram implements Diagram, DiagramDefinition {
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">private String print(Diagram diagram, Type type) {
+    Map&lt;String, String&gt; properties = PropertiesDiagramHelper.getProperties(diagram, type);
 
-    final Collection&lt;DefaultNote&gt; notes = new LinkedHashSet&lt;&gt;()
-    final Collection&lt;DefaultRelationship&gt; relationships = new LinkedHashSet&lt;&gt;()
-
-    private final Map&lt;String, DefaultType&gt; typesMap = [:].withDefault { key -&gt; new DefaultType(this, key.toString()) }
-
-    @Override
-    Collection&lt;? extends Type&gt; getTypes() {
-        return typesMap.values()
+    if (properties.isEmpty()) {
+        return String.format("[%s]", type.getName());
     }
 
-    @Override
-    DefaultNote note(String text, String color) {
-        Note note = new DefaultNote(text, color)
-        this.notes.add(note)
-        return note
-    }
+    String propertiesFormatted = properties
+            .entrySet()
+            .stream()
+            .map((e) -&gt; e.getKey() + ":" + e.getValue())
+            .collect(Collectors.joining(";"));
 
-    @Override
-    DefaultType type(String name, @DelegatesTo(value = TypeDefinition, strategy = Closure.DELEGATE_FIRST) Closure builder) {
-        DefaultType type = typesMap[name]
-        type.with builder
-        return type
-    }
-
-    @Override
-    DefaultRelationship relationship(
-        String source,
-        RelationshipType relationshipType,
-        String destination,
-        @DelegatesTo(value = RelationshipDefinition, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
-    ) {
-        DefaultRelationship relationship = new DefaultRelationship(type(source, Closure.IDENTITY), relationshipType, type(destination, Closure.IDENTITY))
-        relationship.with additionalProperties
-        this.relationships.add(relationship)
-        return relationship
-    }
-
+    return String.format(
+            "[%s|%s]",
+            type.getName(),
+            propertiesFormatted
+    );
 }</code></pre>
 </div>
 </div>
@@ -1406,16 +1449,13 @@ Thanks to these features the implementation is pretty minimal:</p>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Extract content (accessors) API from the current <code>Diagram</code>, <code>Relationship</code>, <code>Type</code> classes into interfaces of he same name</p>
+<p>Add a method <code>stereotype</code> to the Groovy DSL</p>
 </li>
 <li>
-<p>Extract builder API from the current <code>Diagram</code>, <code>Relationship</code>, <code>Type</code> classes into into interfaces ending <code>Definition</code></p>
+<p>Add a ability to specify type&#8217;s properties to the Groovy DSL</p>
 </li>
 <li>
-<p>Put the implementation into classes with <code>Default</code> prefix</p>
-</li>
-<li>
-<p>Make <code>Diagram04Spec</code> passing</p>
+<p>Update the printer class to print types' properties</p>
 </li>
 </ol>
 </div>
@@ -1423,438 +1463,108 @@ Thanks to these features the implementation is pretty minimal:</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_5_closures_with_parameters">5. Closures with Parameters</h2>
+<h2 id="_5_api_clean_up">5. API Clean Up</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>So far the diagrams were described in a single long method following the code-as-data principle.
-In many situations we want to keep our code DRY ("do not repeat yourself").</p>
-</div>
-<div class="listingblock">
-<div class="title">Keeping DSL DRY</div>
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Unresolved directive in index.adoc - include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram05Spec.groovy[tag=dry]</code></pre>
-</div>
-</div>
-<div class="colist arabic">
-<table>
-<tr>
-<td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Send the delegate of the closure  as a parameter of the closure helps you breaking the DSL definition into smaller chunks</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>Using default method <code>with</code> helps you to <em>continue</em> using the DSL even in the extracted method</td>
-</tr>
-</table>
+<p>The current version of the DSL allows calling all the operations of the diagram objects inside the definition.
+It is a good practice to split the methods for reading and the methods for defining the diagram into two separate
+interfaces.</p>
 </div>
 <div class="paragraph">
-<p>You need to use <code>@ClosureParams</code> annotation to help the static compiler and IDE keep track of the closure&#8217;s parameters.</p>
+<p>See the following <code>Diagram</code> and <code>DiagramDefinition</code> classes:</p>
 </div>
 <div class="listingblock">
-<div class="title">Diagram.java</div>
+<div class="title">Read Operations</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">TypeDefinition type(
-    String name,
-    @DelegatesTo(value = TypeDefinition.class, strategy = Closure.DELEGATE_FIRST)
-    @ClosureParams(value = SimpleType.class, options = "cz.orany.yuml.model.dsl.TypeDefinition")
-    Closure&lt;? extends DiagramContentDefinition&gt; builder
-);</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">package cz.orany.yuml.model;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Consumer;
+
+public interface Diagram {
+
+    static Diagram create(Consumer&lt;DiagramDefinition&gt; diagramConsumer) {
+        return DefaultDiagram.create(diagramConsumer);
+    }
+
+    Collection&lt;Note&gt; getNotes();
+
+    Collection&lt;Type&gt; getTypes();
+
+    Collection&lt;Relationship&gt; getRelationships();
+
+    Map&lt;String, Object&gt; getMetadata();
+
+}</code></pre>
 </div>
 </div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-You don&#8217;t need to update the implementation classes if they still use <code>with</code> method internally
-as <code>with</code> method is already sending self as a single parameter to the closure.
-</td>
-</tr>
-</table>
+<div class="listingblock">
+<div class="title">Definition Operations</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">package cz.orany.yuml.model;
+
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+public interface DiagramDefinition {
+
+    default Note note(String text) {
+        return note(text, null);
+    }
+
+    Note note(String text, String color);
+
+    TypeDefinition type(String name);
+
+    default TypeDefinition type(String name, Consumer&lt;TypeDefinition&gt; configuration) {
+        TypeDefinition type = type(name);
+        configuration.accept(type);
+        return type;
+    }
+
+    default Relationship association(String source, String destination, Consumer&lt;RelationshipDefinition&gt; configuration) {
+        return relationship(source, RelationshipType.ASSOCIATION, destination, configuration);
+    }
+
+    default Relationship aggregation(String source, String destination, Consumer&lt;RelationshipDefinition&gt; configuration) {
+        return relationship(source, RelationshipType.AGGREGATION, destination, configuration);
+    }
+
+    default Relationship inheritance(String source, String destination, Consumer&lt;RelationshipDefinition&gt; configuration) {
+        return relationship(source, RelationshipType.INHERITANCE, destination, configuration);
+    }
+
+    default Relationship composition(String source, String destination, Consumer&lt;RelationshipDefinition&gt; configuration) {
+        return relationship(source, RelationshipType.COMPOSITION, destination, configuration);
+    }
+
+    Relationship relationship(String source, RelationshipType type, String destination, Consumer&lt;RelationshipDefinition&gt; configuration);
+
+    &lt;H extends DiagramHelper, R&gt; R configure(Class&lt;H&gt; helper, Function&lt;H, R&gt; configurationOrQuery);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>As we are developing for version Java 8 and later we can move some methods directly into the <code>DiagramDefinition</code> class. All the consumers
+now uses <code>*Definition</code> interfaces only.</p>
 </div>
 <div class="sect2">
 <h3 id="_tasks_5">Tasks</h3>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Add <code>@ClosureParams</code> annotations to the methods accepting closures and ensure the definition object is passed into the closure as a single parameter.</p>
-</li>
-<li>
-<p>Make <code>Diagram05Spec</code> passing</p>
+<p>Separate the read and definition roles of the diagram using interfaces</p>
 </li>
 </ol>
 </div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_6_closure_pitfalls">6. Closure Pitfalls</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>There are some common misunderstandings when we use closures, especially when the closures are nested one into another.</p>
-</div>
-<div class="paragraph">
-<p>Let&#8217;s take a look on a typical example of nested closures. Assume that all the methods set the resolution strategy to
-<code>DELEGATE_FIRST</code></p>
-</div>
-<div class="listingblock">
-<div class="title">Nested Closures</div>
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">String someProperty = 'Some Property Content'                                       <i class="conum" data-value="1"></i><b>(1)</b>
-
-void doBuild() {
-    new SomeBuilder().levelOne {                                                    <i class="conum" data-value="2"></i><b>(2)</b>
-        levelTwo {                                                                  <i class="conum" data-value="3"></i><b>(3)</b>
-            something = someProperty                                                <i class="conum" data-value="4"></i><b>(4)</b>
-        }
-    }
-}</code></pre>
-</div>
-</div>
-<div class="colist arabic">
-<table>
-<tr>
-<td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>A class has a property which we would like to access from the nested closure</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>First closure definition - the closure&#8217;s <code>owner</code> is instance of our class</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="3"></i><b>3</b></td>
-<td>Second closure definition - the closure&#8217;s <code>owner</code> is the surrounding closure</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="4"></i><b>4</b></td>
-<td>One would expect that <code>someProperty</code> is the <code>someProperty</code> we declared in our class but as the <code>owner</code> of the
-closure is the surrounding closure with its own complicated property handling we might be actually reading property
-<code>someProperty</code> of the delegate of the surrounding closure.</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>To workaround this problem we need to manually keep track of the <code>owner</code> of the top level closure. We can achieve this
-by updating the <code>DefaultDiagram</code> class to also hold the <code>owner</code>.</p>
-</div>
-<div class="listingblock">
-<div class="title">Creating Diagram using Constructors</div>
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">class DefaultDiagram implements Diagram, DiagramDefinition {
-
-    private final Object owner;
-
-    // other fields
-
-    DefaultDiagram(Object owner) {                                                      <i class="conum" data-value="1"></i><b>(1)</b>
-        this.owner = owner
-    }
-
-    // other methods
-
-    @Override
-    DefaultType type(
-        String name,
-        @DelegatesTo(
-            value = TypeDefinition.class,
-            strategy = Closure.DELEGATE_FIRST
-        )
-        @ClosureParams(
-            value = SimpleType.class,
-            options = "cz.orany.yuml.model.dsl.TypeDefinition"
-        )
-        Closure&lt;? extends DiagramContentDefinition&gt; builder
-    ) {
-        DefaultType type = typesMap[name]
-        withSameOwner type, builder                                                     <i class="conum" data-value="2"></i><b>(2)</b>
-        return type
-    }
-
-    protected &lt;V, T&gt; V withSameOwner(T self, Closure&lt;V&gt; closure) {
-        final Closure&lt;V&gt; clonedClosure = closure.rehydrate(                             <i class="conum" data-value="3"></i><b>(3)</b>
-            self,
-            owner,
-            closure.thisObject
-        )
-        clonedClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
-        clonedClosure.call(self)
-    }
-}</code></pre>
-</div>
-</div>
-<div class="colist arabic">
-<table>
-<tr>
-<td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>The <code>DefaultDiagram</code> now must be constructed with the reference to the surrounding closure&#8217;s <code>owner</code></td>
-</tr>
-<tr>
-<td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>We no longer use default <code>with</code> method but slightly updated one which also replaces the <code>owner</code> with expected one</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="3"></i><b>3</b></td>
-<td>We use closure&#8217;s method <code>rehydrate</code> to create a clone with expected <code>owner</code></td>
-</tr>
-</table>
-</div>
-<div class="sect2">
-<h3 id="_tasks_6">Tasks</h3>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Make sure all method accepting closures properly handles the owner</p>
-</li>
-<li>
-<p>Make <code>Diagram06Spec</code> passing</p>
-</li>
-</ol>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_7_providing_extension_points">7. Providing Extension Points</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>A good DSL provides an extension points which allows the developers to extend the language. In our yUML example some
-developers might want to add attribute definitions to the types or declare types as stereotypes.</p>
-</div>
-<div class="listingblock">
-<div class="title">Extensions</div>
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Unresolved directive in index.adoc - include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram07Spec.groovy[tag=extensions]</code></pre>
-</div>
-</div>
-<div class="colist arabic">
-<table>
-<tr>
-<td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Stereotype declaration</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>Property declaration</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>The easiest way how to start extending any DSL is using Groovy&#8217;s extension classes. Extension classes contains
-static methods which first argument is of the type we want to extend.</p>
-</div>
-<div class="paragraph">
-<p>For example <code>stereotype</code> can be easily handled by calling <code>type</code> with the name surrounded by <code>&lt;&lt;</code> and <code>&gt;&gt;</code>.</p>
-</div>
-<div class="listingblock">
-<div class="title">Stereoptypes Extension</div>
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">public class StereotypeExtensions {
-
-    public static TypeDefinition stereotype(
-        DiagramDefinition diagram,
-        String name
-    ) {
-        return diagram.type("&lt;&lt;" + name + "&gt;&gt;");
-    }
-
-    // other extension methods
-
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>To enable the class as extension module you need to create a file <code>META-INF/services/org.codehaus.groovy.runtime.ExtensionModule</code> with the following content:</p>
-</div>
-<div class="listingblock">
-<div class="title">Extensions Declaration</div>
-<div class="content">
-<pre>moduleName=yuml-extra
-moduleVersion=0.1.0
-extensionClasses=cz.orany.yuml.stereotype.StereotypeExtensions
-staticExtensionClasses=</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>For more complicated extensions we can introduce some generic container such as <code>Map&lt;String, Object&gt; metadata</code>
-into the diagram class which we can manipulate using <em>helper</em> objects:</p>
-</div>
-<div class="listingblock">
-<div class="title">Metadata Helpers</div>
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">@Override
-public &lt;H extends DiagramHelper, R&gt; H configure(
-    @DelegatesTo.Target("helper")
-    Class&lt;H&gt; helper,
-    @DelegatesTo(
-        value = DelegatesTo.Target.class,
-        target = "helper",
-        strategy = Closure.DELEGATE_FIRST,
-        genericTypeIndex = 0
-    )
-    @ClosureParams(FirstParam.FirstGenericType.class)
-    Closure&lt;R&gt; configuration
-) {
-    H helperInstance = (H) helperMap.computeIfAbsent(helper, {
-        helper.newInstance()
-    })
-    DefaultGroovyMethods.with(helperInstance, configuration)
-    return helperInstance
-}
-
-void postprocess() {
-    for (DiagramHelper helper : helperMap.values()) {
-        metadata.putAll(helper.metadata)
-    }
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>We can use these helpers in another extension class to store the properties:</p>
-</div>
-<div class="listingblock">
-<div class="title">Properties Extension</div>
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">CompileStatic
-class PropertiesDiagramHelperExtensions {
-
-    static TypeDefinition property(
-        TypeDefinition typeDefinition,
-        String type,
-        String name
-    ) {
-        typeDefinition
-            .diagramDefinition
-            .configure(PropertiesDiagramHelper) {
-                it.addProperty(typeDefinition.name, type, name)
-            }
-        return typeDefinition
-    }
-
-    static TypeDefinition property(
-        TypeDefinition typeDefinition,
-        Map&lt;String, String&gt; properties
-    ) {
-        typeDefinition
-            .diagramDefinition
-            .configure(PropertiesDiagramHelper) {
-            it.addProperties(typeDefinition.name, properties)
-        }
-        return typeDefinition
-    }
-}</code></pre>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_tasks_7">Tasks</h3>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Create extension to support <code>stereotype</code></p>
-</li>
-<li>
-<p>Create extension to support <code>properties</code></p>
-</li>
-<li>
-<p>Make <code>Diagram07Spec</code> passing</p>
-</li>
-</ol>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_8_java_dsl">8. Java DSL</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>As DSL creator, you will probably want to reach the widest audience possible. Plain old Java is still
-far more popular then Groovy. Rewriting your DSL into Java will help you to attract more developers who don&#8217;t want or
-simply can&#8217;t use Groovy as their primary language.</p>
-</div>
-<div class="paragraph">
-<p>Java 8 supports lambda expression which looks quite similar to Groovy closures but it lacks the ablity
-to alter the delegate. `Consumer`interface can be easily used instead of closures for most of the
-situations.</p>
-</div>
-<div class="listingblock">
-<div class="title">Diagram08Test.java</div>
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram08Test.java[tag=java]</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The significant difference is the presence of the callee as <code>Diagram d</code> which is passed inside the lambda
-body.</p>
-</div>
-<div class="paragraph">
-<p>I consider a good practise to keep the Groovy code separated inside extension methods which will look like
-the original ones except the accept the original type as a first argument:</p>
-</div>
-<div class="listingblock">
-<div class="title">Extension method inside DiagramExtensions.java</div>
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">public static RelationshipDefinition relationship(
-    DiagramDefinition self,
-    String source,
-    RelationshipType relationshipType,
-    String destination,
-    @DelegatesTo(
-        value = RelationshipDefinition.class,
-        strategy = Closure.DELEGATE_FIRST
-    )
-    @ClosureParams(
-        value = SimpleType.class,
-        options = "cz.orany.yuml.model.dsl.RelationshipDefinition"
-    )
-    Closure&lt;? extends DiagramContentDefinition&gt; additionalProperties
-) {
-    return self.relationship(
-        source,
-        relationshipType,
-        destination,
-        ConsumerWithDelegate.create(additionalProperties)
-    );
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p><code>ConsumerWithDelegate</code> comes from Groovy Closure Support library which provides couple of
-helper wrappers for closures and popular <code>java.util.function.</code> types.</p>
-</div>
-<div class="sect2">
-<h3 id="_tasks_8">Tasks</h3>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Rewrite your DSL into Java</p>
-</li>
-<li>
-<p>Make <code>Diagram08Spec</code> and <code>Diagram08Test</code> passing</p>
-</li>
-</ol>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_9_named_arguments">9. Named Arguments</h2>
-<div class="sectionbody">
-
-</div>
-</div>
-<div class="sect1">
-<h2 id="_solutions">Solutions</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>You can find reference solutions <a href="https://github.com/musketyr/yuml-dsl-builder/releases">here</a>.</p>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-03-13 16:15:57 +00:00
+Last updated 2019-03-13 17:05:22 +00:00
 </div>
 </div>
 </body>
