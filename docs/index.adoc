@@ -49,10 +49,7 @@ You can execute tests by running following command
 ./gradlew test
 ```
 
-This will execute all the tests. The tests are labeled `DiagramXXSpec` where `XX` is number of the exercise.
-Only `Diagram01Spec` passes at the beginning. Your task is to make the necessary changes to make the rest of the tests
-passing. Some of them will required uncommenting pieces of code inside the tests but the test will tell you itself
-if uncommenting is required.
+This will execute all the tests. Each exercise is
 
 == Introduction
 

@@ -19,11 +19,6 @@ class Diagram03Spec extends Specification {
         [DeliveryMethod]^[International]
     '''.stripIndent().trim()
 
-    void 'uncomment code to proceed to step 8'() {
-        expect:
-            metaClass.getMetaMethod('buildOrderDiagram')
-    }
-
     @Unroll
     void 'create #title diagram'() {
         given:
