@@ -2,6 +2,7 @@ package cz.orany.yuml.model;
 
 import java.util.Objects;
 
+// tag::important[]
 public class Relationship {
 
     private RelationshipType type = RelationshipType.ASSOCIATION;
@@ -11,7 +12,11 @@ public class Relationship {
     private String sourceTitle;
     private Type destination;
     private String destinationCardinality;
-    private String destinationTitle;public RelationshipType getType() {
+    private String destinationTitle;
+
+    // end::important[]
+
+    public RelationshipType getType() {
         return type;
     }
 

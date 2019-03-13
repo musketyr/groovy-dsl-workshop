@@ -2,10 +2,13 @@ package cz.orany.yuml.model;
 
 import java.util.Objects;
 
+// tag::important[]
 public class Note {
 
     private String text;
     private String color;
+
+    // end::important[]
 
     public String getText() {
         return text;

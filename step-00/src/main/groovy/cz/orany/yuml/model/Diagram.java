@@ -4,11 +4,14 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 
+// tag::important[]
 public class Diagram {
 
     private Collection<Note> notes = new LinkedHashSet<>();
     private Collection<Type> types = new LinkedHashSet<>();
     private Collection<Relationship> relationships = new LinkedHashSet<>();
+
+    // end::important[]
 
     public Collection<Note> getNotes() {
         return notes;
@@ -33,6 +36,7 @@ public class Diagram {
     public void setRelationships(Collection<Relationship> relationships) {
         this.relationships = relationships;
     }
+
 
     @Override
     public boolean equals(Object o) {

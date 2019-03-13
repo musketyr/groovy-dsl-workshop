@@ -2,8 +2,12 @@ package cz.orany.yuml.model;
 
 import java.util.Objects;
 
+// tag::important[]
 public class Type {
+
     private String name;
+
+    // end::important[]
 
     public String getName() {
         return name;
