@@ -1,11 +1,6 @@
 package cz.orany.yuml.model
 
 import cz.orany.yuml.export.YumlDiagramPrinter
-import cz.orany.yuml.model.Diagram
-import cz.orany.yuml.model.Note
-import cz.orany.yuml.model.Relationship
-import cz.orany.yuml.model.RelationshipType
-import cz.orany.yuml.model.Type
 import spock.lang.Specification
 
 class Diagram00Spec extends Specification {
