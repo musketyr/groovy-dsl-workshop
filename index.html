@@ -501,7 +501,10 @@ We will create builder-pattern style DSL with nested blocks which perfectly suit
 <p>We will use <a href="https://yuml.me/">yUML diagrams</a> (data class diagrams) as a reference domain model.</p>
 </div>
 <div class="paragraph">
-<p>This workshop is based on <strong>Groovy DSL Builders</strong> series which you can use as reference documentation:</p>
+<p><span class="image"><img src="images/yuml-diagram.png" alt="yUML Diagram&#8217;s Model"></span></p>
+</div>
+<div class="paragraph">
+<p>This workshop is based on <strong>Groovy DSL Builders</strong> series which can be used as reference documentation:</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
@@ -569,7 +572,7 @@ Gradle and Groovy integration even in the free Community version. Import the pro
 </div>
 </div>
 <div class="paragraph">
-<p>You can execute tests by running following command</p>
+<p>You can execute tests by running following command:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -577,7 +580,11 @@ Gradle and Groovy integration even in the free Community version. Import the pro
 </div>
 </div>
 <div class="paragraph">
-<p>This will execute all the tests. Each exercise is</p>
+<p>This will execute all the tests. There are several sub-projects called <code>step-xx</code> in the archive where <code>xx</code> is number
+of the exercise. Each of exercises is covered by single test which will signal you that you have successfully finished
+all the tasks. Each sub-project contains ideal solution of the previous exercise so in case of you get stuck or
+you want to skip an exercise you get everything you need to keep coding. If you want to carry over your code
+just delete everything in <code>src/main</code> directory and replace it with the content of <code>src/main</code> directory of of your previously finished step.</p>
 </div>
 </div>
 </div>
@@ -616,7 +623,7 @@ for further reference on writing Groovy DSLs in Java.</p>
 <div class="listingblock">
 <div class="title">Note.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-00/src/main/java/cz/orany/yuml/model/Note.java[]</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-01/src/main/java/cz/orany/yuml/model/Note.java[]</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -627,13 +634,13 @@ cardinality and title for the <code>source</code> and <code>destination</code></
 <div class="listingblock">
 <div class="title">Relationship.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-00/src/main/java/cz/orany/yuml/model/Relationship.java[]</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-01/src/main/java/cz/orany/yuml/model/Relationship.java[]</code></pre>
 </div>
 </div>
 <div class="listingblock">
 <div class="title">RelationshipType.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-00/src/main/java/cz/orany/yuml/model/RelationshipType.java[]</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-01/src/main/java/cz/orany/yuml/model/RelationshipType.java[]</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -642,7 +649,7 @@ cardinality and title for the <code>source</code> and <code>destination</code></
 <div class="listingblock">
 <div class="title">Type.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-00/src/main/java/cz/orany/yuml/model/Type.java[]</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-01/src/main/java/cz/orany/yuml/model/Type.java[]</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -651,78 +658,7 @@ cardinality and title for the <code>source</code> and <code>destination</code></
 <div class="listingblock">
 <div class="title">Creating Diagram using Constructors</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Diagram diagram =  new Diagram()
-
-diagram.notes.add(new Note(
-    text: 'You can stick notes on diagrams too!',
-    color: 'skyblue'
-))
-
-Type customer = new Type(name: 'Customer')
-Type order = new Type(name: 'Order')
-Type lineItem = new Type(name: 'LineItem')
-Type deliveryMethod = new Type(name: 'DeliveryMethod')
-Type product = new Type(name: 'Product')
-Type category = new Type(name: 'Category')
-Type nationalDeliveryMethod = new Type(name: 'National')
-Type internationalDeliveryMethod = new Type(name: 'International')
-
-diagram.types.add(customer)
-diagram.types.add(order)
-diagram.types.add(lineItem)
-diagram.types.add(deliveryMethod)
-diagram.types.add(product)
-diagram.types.add(category)
-diagram.types.add(nationalDeliveryMethod)
-diagram.types.add(internationalDeliveryMethod)
-
-diagram.relationships.add(new Relationship(
-    source: customer,
-    sourceCardinality: '1',
-    destinationTitle: 'orders',
-    destination: order,
-    destinationCardinality: '0..*',
-    type: RelationshipType.AGGREGATION
-))
-
-diagram.relationships.add(new Relationship(
-    source: order,
-    sourceCardinality: '*',
-    destination: lineItem,
-    destinationCardinality: '*',
-    type: RelationshipType.COMPOSITION
-))
-
-diagram.relationships.add(new Relationship(
-    source: order,
-    destination: deliveryMethod,
-    destinationCardinality: '1'
-))
-
-diagram.relationships.add(new Relationship(
-    source: order,
-    sourceCardinality: '*',
-    destination: product,
-    destinationCardinality: '*'
-))
-
-diagram.relationships.add(new Relationship(
-    source: category,
-    destination: product,
-    bidirectional: true
-))
-
-diagram.relationships.add(new Relationship(
-    source: nationalDeliveryMethod,
-    destination: deliveryMethod,
-    type: RelationshipType.INHERITANCE
-))
-
-diagram.relationships.add(new Relationship(
-    source: internationalDeliveryMethod,
-    destination: deliveryMethod,
-    type: RelationshipType.INHERITANCE
-))</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Unresolved directive in index.adoc - include::../step-01/src/test/groovy/cz/orany/yuml/model/Diagram00Spec.groovy[tag=constructors]</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1533,7 +1469,7 @@ helper wrappers for closures and popular <code>java.util.function.</code> types.
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-03-13 13:51:36 +00:00
+Last updated 2019-03-13 14:09:40 +00:00
 </div>
 </div>
 </body>
