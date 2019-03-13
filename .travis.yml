@@ -12,6 +12,6 @@ cache:
 
 deploy:
   provider: script
-  script: bash ./gradlew publishGhPages
+  script: bash ./gradlew publishGhPages --stacktrace
   on:
     branch: master
