@@ -441,8 +441,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_project_archive">Project Archive</a></li>
 </ul>
 </li>
-<li><a href="#_1_introduction">1. Introduction</a></li>
-<li><a href="#_2_managing_diagram_content">2. Managing Diagram Content</a>
+<li><a href="#_introduction">Introduction</a></li>
+<li><a href="#_1_managing_diagram_content">1. Managing Diagram Content</a>
 <ul class="sectlevel2">
 <li><a href="#_tasks">Tasks</a></li>
 </ul>
@@ -457,10 +457,26 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_tasks_3">Tasks</a></li>
 </ul>
 </li>
-<li><a href="#_5_closures_with_parameters">5. Closures with Parameters</a></li>
-<li><a href="#_6_closure_pitfalls">6. Closure Pitfalls</a></li>
-<li><a href="#_7_providing_extension_points">7. Providing Extension Points</a></li>
-<li><a href="#_8_java_dsl">8. Java DSL</a></li>
+<li><a href="#_5_closures_with_parameters">5. Closures with Parameters</a>
+<ul class="sectlevel2">
+<li><a href="#_tasks_4">Tasks</a></li>
+</ul>
+</li>
+<li><a href="#_6_closure_pitfalls">6. Closure Pitfalls</a>
+<ul class="sectlevel2">
+<li><a href="#_tasks_5">Tasks</a></li>
+</ul>
+</li>
+<li><a href="#_7_providing_extension_points">7. Providing Extension Points</a>
+<ul class="sectlevel2">
+<li><a href="#_tasks_6">Tasks</a></li>
+</ul>
+</li>
+<li><a href="#_8_java_dsl">8. Java DSL</a>
+<ul class="sectlevel2">
+<li><a href="#_tasks_7">Tasks</a></li>
+</ul>
+</li>
 <li><a href="#_9_named_arguments">9. Named Arguments</a></li>
 <li><a href="#_solutions">Solutions</a></li>
 </ul>
@@ -561,16 +577,13 @@ Gradle and Groovy integration even in the free Community version. Import the pro
 </div>
 </div>
 <div class="paragraph">
-<p>This will execute all the tests. The tests are labeled <code>DiagramXXSpec</code> where <code>XX</code> is number of the exercise.
-Only <code>Diagram01Spec</code> passes at the beginning. Your task is to make the necessary chagnes to make the rest of the tests
-passing. Some of them will required uncommenting picese of code inside the tests but the test will tell you itself
-if uncommenting is required.</p>
+<p>This will execute all the tests. Each exercise is</p>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_1_introduction">1. Introduction</h2>
+<h2 id="_introduction">Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>During this workshop, you are going to create DSL for <a href="https://yuml.me/">yUML.me</a> diagrams.
@@ -581,50 +594,29 @@ yUML helps to create simple UML diagram online. Its simplified data model is sho
 <p><span class="image"><img src="images/yuml-diagram.png" alt="yUML Diagram&#8217;s Model"></span></p>
 </div>
 <div class="paragraph">
-<p>In this step, there is no extra work then get familiar with the codebase.
-You can inspect the implementation of the data model in <code>cz.orany.yuml.model</code> package.</p>
+<p>Although we are implementing Groovy DSL most of the DSL code will be written in Java. This approach will help you
+to reach greater audience and help us avoid some common pitfalls more easily. See <a href="https://medium.com/p/99bd118538b4">The Resignation: Rewriting the Groovy DSL builder into Java</a>
+for further reference on writing Groovy DSLs in Java.</p>
+</div>
+<div class="paragraph">
+<p>First, we should get familiar with the data model in <code>cz.orany.yuml.model</code> package.</p>
 </div>
 <div class="paragraph">
 <p><code>Diagram</code> represents the diagram which can contain notes, types and their relationships.</p>
 </div>
 <div class="listingblock">
-<div class="title">Diagram.groovy</div>
+<div class="title">Diagram.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">package cz.orany.yuml.model
-
-import groovy.transform.CompileStatic
-import groovy.transform.EqualsAndHashCode
-
-@CompileStatic
-@EqualsAndHashCode
-class Diagram {
-
-    Collection&lt;Note&gt; notes = new LinkedHashSet&lt;&gt;()
-    Collection&lt;Type&gt; types = new LinkedHashSet&lt;&gt;()
-    Collection&lt;Relationship&gt; relationships = new LinkedHashSet&lt;&gt;()
-
-}</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-00/src/main/java/cz/orany/yuml/model/Diagram.java[]</code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p><code>Note</code> is a simple box placed next to the diagram which can have it&#8217;s <code>text</code> and <code>color</code>.</p>
 </div>
 <div class="listingblock">
-<div class="title">Note.groovy</div>
+<div class="title">Note.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">package cz.orany.yuml.model
-
-import groovy.transform.CompileStatic
-import groovy.transform.EqualsAndHashCode
-
-@CompileStatic
-@EqualsAndHashCode
-class Note {
-
-    String text
-    String color
-
-}</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-00/src/main/java/cz/orany/yuml/model/Note.java[]</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -633,73 +625,28 @@ it&#8217;s <code>type</code>, <code>source</code> and <code>destination</code>. 
 cardinality and title for the <code>source</code> and <code>destination</code></p>
 </div>
 <div class="listingblock">
-<div class="title">Relationship.groovy</div>
+<div class="title">Relationship.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">package cz.orany.yuml.model
-
-import groovy.transform.CompileStatic
-import groovy.transform.EqualsAndHashCode
-
-@CompileStatic
-@EqualsAndHashCode
-class Relationship {
-
-    RelationshipType type = RelationshipType.ASSOCIATION
-    boolean bidirectional
-
-    Type source
-    String sourceCardinality
-    String sourceTitle
-
-    Type destination
-    String destinationCardinality
-    String destinationTitle
-
-}</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-00/src/main/java/cz/orany/yuml/model/Relationship.java[]</code></pre>
 </div>
 </div>
 <div class="listingblock">
-<div class="title">RelationshipType.groovy</div>
+<div class="title">RelationshipType.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">package cz.orany.yuml.model
-
-import groovy.transform.CompileStatic
-
-@CompileStatic
-enum RelationshipType {
-    ASSOCIATION,
-    AGGREGATION,
-    COMPOSITION,
-    INHERITANCE
-}</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-00/src/main/java/cz/orany/yuml/model/RelationshipType.java[]</code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p><code>Type</code> is a data class determined by it&#8217;s <code>name</code>.</p>
 </div>
 <div class="listingblock">
-<div class="title">Type.groovy</div>
+<div class="title">Type.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">package cz.orany.yuml.model
-
-import groovy.transform.CompileStatic
-import groovy.transform.EqualsAndHashCode
-
-@CompileStatic
-@EqualsAndHashCode
-class Type {
-
-    String name
-
-    @Override
-    String toString() {
-        return "[$name]"
-    }
-}</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-00/src/main/java/cz/orany/yuml/model/Type.java[]</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The very first iteration uses just map constructors to create the model.</p>
+<p>The very first iteration uses just map constructors to create the model. This state represents what you get for free in Groovy:</p>
 </div>
 <div class="listingblock">
 <div class="title">Creating Diagram using Constructors</div>
@@ -784,7 +731,7 @@ diagram.relationships.add(new Relationship(
 </div>
 </div>
 <div class="sect1">
-<h2 id="_2_managing_diagram_content">2. Managing Diagram Content</h2>
+<h2 id="_1_managing_diagram_content">1. Managing Diagram Content</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The most of the verbosity of the initial example originates from manual handling
@@ -793,38 +740,7 @@ of diagram&#8217;s content - relationships, notes and types. Let&#8217;s make <c
 <div class="listingblock">
 <div class="title">Diagram Responsible for Content Management</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Diagram diagram =  new Diagram().with {
-    note('You can stick notes on diagrams too!','skyblue')
-
-    relationship(type('Customer'), RelationshipType.AGGREGATION, type('Order')).with {
-        sourceCardinality = '1'
-        destinationTitle = 'orders'
-        destinationCardinality = '0..*'
-    }
-
-    relationship(type('Order'), RelationshipType.COMPOSITION, type('LineItem')).with {
-        sourceCardinality = '*'
-        destinationCardinality = '*'
-    }
-
-    relationship(type('Order'), type('DeliveryMethod')).with {
-        destinationCardinality = '1'
-    }
-
-    relationship(type('Order'), type('Product')).with {
-        sourceCardinality = '*'
-        destinationCardinality ='*'
-    }
-
-    relationship(type('Category'), type('Product')).with {
-        bidirectional = true
-    }
-
-    relationship(type('National'), RelationshipType.INHERITANCE, type('DeliveryMethod'))
-    relationship(type('International'), RelationshipType.INHERITANCE, type('DeliveryMethod'))
-
-    it
-}</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Unresolved directive in index.adoc - include::../step-01/src/test/groovy/cz/orany/yuml/model/Diagram02Spec.groovy[tag=with]</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -857,35 +773,7 @@ Methods must not create duplicates for the same input.</p>
 <div class="listingblock">
 <div class="title">Methods Accepting Closures</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Diagram.build {
-    note('You can stick notes on diagrams too!', 'skyblue')
-
-    aggregation('Customer', 'Order') {
-        source '1'
-        destination '0..*', 'orders'
-    }
-
-    composition('Order', 'LineItem') {
-        source '*'
-        destination '*'
-    }
-
-    association('Order', 'DeliveryMethod') {
-        destination '1'
-    }
-
-    association('Order', 'Product') {
-        source '*'
-        destination '*'
-    }
-
-    association('Category', 'Product') {
-        bidirectional true
-    }
-
-    type 'National' inherits from type 'DeliveryMethod'
-    type'International' inherits from type 'DeliveryMethod'
-}</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Unresolved directive in index.adoc - include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram03Spec.groovy[tag=closures]</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -976,18 +864,7 @@ class InheritanceBuilder {
 <div class="listingblock">
 <div class="title">Fluent DSL</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Diagram.build {
-    note 'YUML Diagram Components'
-
-    // diagram should have at least one type to be meaningful, rest is optional
-    type 'Diagram' has one to many type 'Type'
-    type 'Diagram' has zero to many type 'Note'
-    type 'Diagram' has zero to many type 'Relationship'
-
-    type 'Relationship' has one type 'Type' called 'source'
-    type 'Relationship' has one type 'Type' called 'destination'
-    type 'Relationship' owns one type 'RelationshipType'
-}</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Unresolved directive in index.adoc - include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram03Spec.groovy[tag=fluent]</code></pre>
 </div>
 </div>
 <div class="sect2">
@@ -1227,25 +1104,416 @@ Thanks to these features the implementation is pretty minimal:</p>
 <div class="sect1">
 <h2 id="_5_closures_with_parameters">5. Closures with Parameters</h2>
 <div class="sectionbody">
-
+<div class="paragraph">
+<p>So far the diagrams were described in a single long method following the code-as-data principle.
+In many situations we want to keep our code DRY ("do not repeat yourself").</p>
+</div>
+<div class="listingblock">
+<div class="title">Keeping DSL DRY</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Unresolved directive in index.adoc - include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram05Spec.groovy[tag=dry]</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Send the delegate of the closure  as a parameter of the closure helps you breaking the DSL definition into smaller chunks</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Using default method <code>with</code> helps you to <em>continue</em> using the DSL even in the extracted method</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>You need to use <code>@ClosureParams</code> annotation to help the static compiler and IDE keep track of the closure&#8217;s parameters.</p>
+</div>
+<div class="listingblock">
+<div class="title">Diagram.java</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">TypeDefinition type(
+    String name,
+    @DelegatesTo(value = TypeDefinition.class, strategy = Closure.DELEGATE_FIRST)
+    @ClosureParams(value = SimpleType.class, options = "cz.orany.yuml.model.dsl.TypeDefinition")
+    Closure&lt;? extends DiagramContentDefinition&gt; builder
+);</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+You don&#8217;t need to update the implementation classes if they still use <code>with</code> method internally
+as <code>with</code> method is already sending self as a single parameter to the closure.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_tasks_4">Tasks</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Add <code>@ClosureParams</code> annotations to the methods accepting closures and ensure the definition object is passed into the closure as a single parameter.</p>
+</li>
+<li>
+<p>Make <code>Diagram05Spec</code> passing</p>
+</li>
+</ol>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_6_closure_pitfalls">6. Closure Pitfalls</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>There are some common misunderstandings when we use closures, especially when the closures are nested one into another.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s take a look on a typical example of nested closures. Assume that all the methods set the resolution strategy to
+<code>DELEGATE_FIRST</code></p>
+</div>
+<div class="listingblock">
+<div class="title">Nested Closures</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">String someProperty = 'Some Property Content'                                       <i class="conum" data-value="1"></i><b>(1)</b>
 
+void doBuild() {
+    new SomeBuilder().levelOne {                                                    <i class="conum" data-value="2"></i><b>(2)</b>
+        levelTwo {                                                                  <i class="conum" data-value="3"></i><b>(3)</b>
+            something = someProperty                                                <i class="conum" data-value="4"></i><b>(4)</b>
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>A class has a property which we would like to access from the nested closure</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>First closure definition - the closure&#8217;s <code>owner</code> is instance of our class</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Second closure definition - the closure&#8217;s <code>owner</code> is the surrounding closure</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>One would expect that <code>someProperty</code> is the <code>someProperty</code> we declared in our class but as the <code>owner</code> of the
+closure is the surrounding closure with its own complicated property handling we might be actually reading property
+<code>someProperty</code> of the delegate of the surrounding closure.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>To workaround this problem we need to manually keep track of the <code>owner</code> of the top level closure. We can achieve this
+by updating the <code>DefaultDiagram</code> class to also hold the <code>owner</code>.</p>
+</div>
+<div class="listingblock">
+<div class="title">Creating Diagram using Constructors</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">class DefaultDiagram implements Diagram, DiagramDefinition {
+
+    private final Object owner;
+
+    // other fields
+
+    DefaultDiagram(Object owner) {                                                      <i class="conum" data-value="1"></i><b>(1)</b>
+        this.owner = owner
+    }
+
+    // other methods
+
+    @Override
+    DefaultType type(
+        String name,
+        @DelegatesTo(
+            value = TypeDefinition.class,
+            strategy = Closure.DELEGATE_FIRST
+        )
+        @ClosureParams(
+            value = SimpleType.class,
+            options = "cz.orany.yuml.model.dsl.TypeDefinition"
+        )
+        Closure&lt;? extends DiagramContentDefinition&gt; builder
+    ) {
+        DefaultType type = typesMap[name]
+        withSameOwner type, builder                                                     <i class="conum" data-value="2"></i><b>(2)</b>
+        return type
+    }
+
+    protected &lt;V, T&gt; V withSameOwner(T self, Closure&lt;V&gt; closure) {
+        final Closure&lt;V&gt; clonedClosure = closure.rehydrate(                             <i class="conum" data-value="3"></i><b>(3)</b>
+            self,
+            owner,
+            closure.thisObject
+        )
+        clonedClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        clonedClosure.call(self)
+    }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>The <code>DefaultDiagram</code> now must be constructed with the reference to the surrounding closure&#8217;s <code>owner</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>We no longer use default <code>with</code> method but slightly updated one which also replaces the <code>owner</code> with expected one</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>We use closure&#8217;s method <code>rehydrate</code> to create a clone with expected <code>owner</code></td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_tasks_5">Tasks</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Make sure all method accepting closures properly handles the owner</p>
+</li>
+<li>
+<p>Make <code>Diagram06Spec</code> passing</p>
+</li>
+</ol>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_7_providing_extension_points">7. Providing Extension Points</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>A good DSL provides an extension points which allows the developers to extend the language. In our yUML example some
+developers might want to add attribute definitions to the types or declare types as stereotypes.</p>
+</div>
+<div class="listingblock">
+<div class="title">Extensions</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Unresolved directive in index.adoc - include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram07Spec.groovy[tag=extensions]</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Stereotype declaration</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Property declaration</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The easiest way how to start extending any DSL is using Groovy&#8217;s extension classes. Extension classes contains
+static methods which first argument is of the type we want to extend.</p>
+</div>
+<div class="paragraph">
+<p>For example <code>stereotype</code> can be easily handled by calling <code>type</code> with the name surrounded by <code>&lt;&lt;</code> and <code>&gt;&gt;</code>.</p>
+</div>
+<div class="listingblock">
+<div class="title">Stereoptypes Extension</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">public class StereotypeExtensions {
 
+    public static TypeDefinition stereotype(
+        DiagramDefinition diagram,
+        String name
+    ) {
+        return diagram.type("&lt;&lt;" + name + "&gt;&gt;");
+    }
+
+    // other extension methods
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To enable the class as extension module you need to create a file <code>META-INF/services/org.codehaus.groovy.runtime.ExtensionModule</code> with the following content:</p>
+</div>
+<div class="listingblock">
+<div class="title">Extensions Declaration</div>
+<div class="content">
+<pre>moduleName=yuml-extra
+moduleVersion=0.1.0
+extensionClasses=cz.orany.yuml.stereotype.StereotypeExtensions
+staticExtensionClasses=</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For more complicated extensions we can introduce some generic container such as <code>Map&lt;String, Object&gt; metadata</code>
+into the diagram class which we can manipulate using <em>helper</em> objects:</p>
+</div>
+<div class="listingblock">
+<div class="title">Metadata Helpers</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">@Override
+public &lt;H extends DiagramHelper, R&gt; H configure(
+    @DelegatesTo.Target("helper")
+    Class&lt;H&gt; helper,
+    @DelegatesTo(
+        value = DelegatesTo.Target.class,
+        target = "helper",
+        strategy = Closure.DELEGATE_FIRST,
+        genericTypeIndex = 0
+    )
+    @ClosureParams(FirstParam.FirstGenericType.class)
+    Closure&lt;R&gt; configuration
+) {
+    H helperInstance = (H) helperMap.computeIfAbsent(helper, {
+        helper.newInstance()
+    })
+    DefaultGroovyMethods.with(helperInstance, configuration)
+    return helperInstance
+}
+
+void postprocess() {
+    for (DiagramHelper helper : helperMap.values()) {
+        metadata.putAll(helper.metadata)
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We can use these helpers in another extension class to store the properties:</p>
+</div>
+<div class="listingblock">
+<div class="title">Properties Extension</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">CompileStatic
+class PropertiesDiagramHelperExtensions {
+
+    static TypeDefinition property(
+        TypeDefinition typeDefinition,
+        String type,
+        String name
+    ) {
+        typeDefinition
+            .diagramDefinition
+            .configure(PropertiesDiagramHelper) {
+                it.addProperty(typeDefinition.name, type, name)
+            }
+        return typeDefinition
+    }
+
+    static TypeDefinition property(
+        TypeDefinition typeDefinition,
+        Map&lt;String, String&gt; properties
+    ) {
+        typeDefinition
+            .diagramDefinition
+            .configure(PropertiesDiagramHelper) {
+            it.addProperties(typeDefinition.name, properties)
+        }
+        return typeDefinition
+    }
+}</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tasks_6">Tasks</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Create extension to support <code>stereotype</code></p>
+</li>
+<li>
+<p>Create extension to support <code>properties</code></p>
+</li>
+<li>
+<p>Make <code>Diagram07Spec</code> passing</p>
+</li>
+</ol>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_8_java_dsl">8. Java DSL</h2>
 <div class="sectionbody">
-
+<div class="paragraph">
+<p>As DSL creator, you will probably want to reach the widest audience possible. Plain old Java is still
+far more popular then Groovy. Rewriting your DSL into Java will help you to attract more developers who don&#8217;t want or
+simply can&#8217;t use Groovy as their primary language.</p>
+</div>
+<div class="paragraph">
+<p>Java 8 supports lambda expression which looks quite similar to Groovy closures but it lacks the ablity
+to alter the delegate. `Consumer`interface can be easily used instead of closures for most of the
+situations.</p>
+</div>
+<div class="listingblock">
+<div class="title">Diagram08Test.java</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram08Test.java[tag=java]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The significant difference is the presence of the callee as <code>Diagram d</code> which is passed inside the lambda
+body.</p>
+</div>
+<div class="paragraph">
+<p>I consider a good practise to keep the Groovy code separated inside extension methods which will look like
+the original ones except the accept the original type as a first argument:</p>
+</div>
+<div class="listingblock">
+<div class="title">Extension method inside DiagramExtensions.java</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">public static RelationshipDefinition relationship(
+    DiagramDefinition self,
+    String source,
+    RelationshipType relationshipType,
+    String destination,
+    @DelegatesTo(
+        value = RelationshipDefinition.class,
+        strategy = Closure.DELEGATE_FIRST
+    )
+    @ClosureParams(
+        value = SimpleType.class,
+        options = "cz.orany.yuml.model.dsl.RelationshipDefinition"
+    )
+    Closure&lt;? extends DiagramContentDefinition&gt; additionalProperties
+) {
+    return self.relationship(
+        source,
+        relationshipType,
+        destination,
+        ConsumerWithDelegate.create(additionalProperties)
+    );
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>ConsumerWithDelegate</code> comes from Groovy Closure Support library which provides couple of
+helper wrappers for closures and popular <code>java.util.function.</code> types.</p>
+</div>
+<div class="sect2">
+<h3 id="_tasks_7">Tasks</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Rewrite your DSL into Java</p>
+</li>
+<li>
+<p>Make <code>Diagram08Spec</code> and <code>Diagram08Test</code> passing</p>
+</li>
+</ol>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1265,7 +1533,7 @@ Thanks to these features the implementation is pretty minimal:</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-03-11 15:23:55 CET
+Last updated 2019-03-13 13:51:36 +00:00
 </div>
 </div>
 </body>
