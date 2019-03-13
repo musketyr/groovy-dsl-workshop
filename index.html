@@ -579,12 +579,22 @@ Gradle and Groovy integration even in the free Community version. Import the pro
 <pre class="highlightjs highlight"><code>./gradlew test</code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p>This will execute all the tests. There are several sub-projects called <code>step-xx</code> in the archive where <code>xx</code> is number
-of the exercise. Each of exercises is covered by single test which will signal you that you have successfully finished
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+There are several sub-projects called <code>step-xx</code> in the archive where <code>xx</code> is number
+of the exercise. Each of the exercises is covered by a single test which will pass only if you have successfully finished
 all the tasks. Each sub-project contains ideal solution of the previous exercise so in case of you get stuck or
-you want to skip an exercise you get everything you need to keep coding. If you want to carry over your code
-just delete everything in <code>src/main</code> directory and replace it with the content of <code>src/main</code> directory of of your previously finished step.</p>
+you want to skip an exercise for any reason you get everything you need to keep coding.
+Of course you can continue working on your own code. In that case, you can simply copy the test from the next step into
+your current sub-project.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -593,17 +603,17 @@ just delete everything in <code>src/main</code> directory and replace it with th
 <h2 id="_introduction">Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>During this workshop, you are going to create DSL for <a href="https://yuml.me/">yUML.me</a> diagrams.
-yUML helps to create simple UML diagram online. Its simplified data model is shown in the following diagram.</p>
+<p>In this workshop, we are going to create DSL for <a href="https://yuml.me/">yUML.me</a> diagrams.
+yUML helps to create simple UML diagram online. Its simplified data model is shown in the following diagram:</p>
 </div>
 <div class="paragraph">
 <div class="title">YUML Diagram&#8217;s Model</div>
 <p><span class="image"><img src="images/yuml-diagram.png" alt="yUML Diagram&#8217;s Model"></span></p>
 </div>
 <div class="paragraph">
-<p>Although we are implementing Groovy DSL most of the DSL code will be written in Java. This approach will help you
-to reach greater audience and help us avoid some common pitfalls more easily. See <a href="https://medium.com/p/99bd118538b4">The Resignation: Rewriting the Groovy DSL builder into Java</a>
-for further reference on writing Groovy DSLs in Java.</p>
+<p>Although we are implementing Groovy DSL the DSL code will be written in Java. This approach will help us
+to reach greater audience and help us avoid <a href="https://medium.com/p/83ced4b8f2b">some common pitfalls</a> more easily.
+See <a href="https://medium.com/p/99bd118538b4">The Resignation: Rewriting the Groovy DSL builder into Java</a> for further reference on writing Groovy DSLs in Java.</p>
 </div>
 <div class="paragraph">
 <p>First, we should get familiar with the data model in <code>cz.orany.yuml.model</code> package.</p>
@@ -614,66 +624,13 @@ for further reference on writing Groovy DSLs in Java.</p>
 <div class="listingblock">
 <div class="title">Diagram.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">package cz.orany.yuml.model;
-
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Objects;
-
-public class Diagram {
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">public class Diagram {
 
     private Collection&lt;Note&gt; notes = new LinkedHashSet&lt;&gt;();
     private Collection&lt;Type&gt; types = new LinkedHashSet&lt;&gt;();
     private Collection&lt;Relationship&gt; relationships = new LinkedHashSet&lt;&gt;();
 
-    public Collection&lt;Note&gt; getNotes() {
-        return notes;
-    }
-
-    public void setNotes(Collection&lt;Note&gt; notes) {
-        this.notes = notes;
-    }
-
-    public Collection&lt;Type&gt; getTypes() {
-        return types;
-    }
-
-    public void setTypes(Collection&lt;Type&gt; types) {
-        this.types = types;
-    }
-
-    public Collection&lt;Relationship&gt; getRelationships() {
-        return relationships;
-    }
-
-    public void setRelationships(Collection&lt;Relationship&gt; relationships) {
-        this.relationships = relationships;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Diagram diagram = (Diagram) o;
-        return Objects.equals(notes, diagram.notes) &amp;&amp;
-                Objects.equals(types, diagram.types) &amp;&amp;
-                Objects.equals(relationships, diagram.relationships);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(notes, types, relationships);
-    }
-
-    @Override
-    public String toString() {
-        return "Diagram{" +
-                "notes=" + notes +
-                ", types=" + types +
-                ", relationships=" + relationships +
-                '}';
-    }
-
+    // boilerplate
 }</code></pre>
 </div>
 </div>
@@ -683,50 +640,12 @@ public class Diagram {
 <div class="listingblock">
 <div class="title">Note.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">package cz.orany.yuml.model;
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">public class Note {
 
-import java.util.Objects;
+    private String text;
+    private String color;
 
-public class Note {
-
-    private final String text;
-    private final String color;
-
-    public Note(String text, String color) {
-        this.text = text;
-        this.color = color;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public String getColor() {
-        return color;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Note note = (Note) o;
-        return Objects.equals(text, note.text) &amp;&amp;
-                Objects.equals(color, note.color);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(text, color);
-    }
-
-    @Override
-    public String toString() {
-        return "Note{" +
-                "text='" + text + '\'' +
-                ", color='" + color + '\'' +
-                '}';
-    }
-
+    // boilerplate
 }</code></pre>
 </div>
 </div>
@@ -738,110 +657,18 @@ cardinality and title for the <code>source</code> and <code>destination</code></
 <div class="listingblock">
 <div class="title">Relationship.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">package cz.orany.yuml.model;
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">public class Relationship {
 
-import java.util.Objects;
-
-public class Relationship {
-
-    private final RelationshipType type;
+    private RelationshipType type = RelationshipType.ASSOCIATION;
     private boolean bidirectional;
-    private final Type source;
+    private Type source;
     private String sourceCardinality;
     private String sourceTitle;
-    private final Type destination;
+    private Type destination;
     private String destinationCardinality;
-    private String destinationTitle;public RelationshipType getType() {
-        return type;
-    }
+    private String destinationTitle;
 
-    public Relationship(Type source, RelationshipType type, Type destination) {
-        this.type = type;
-        this.source = source;
-        this.destination = destination;
-    }
-
-    public boolean isBidirectional() {
-        return bidirectional;
-    }
-
-    public void setBidirectional(boolean bidirectional) {
-        this.bidirectional = bidirectional;
-    }
-
-    public Type getSource() {
-        return source;
-    }
-
-    public String getSourceCardinality() {
-        return sourceCardinality;
-    }
-
-    public void setSourceCardinality(String sourceCardinality) {
-        this.sourceCardinality = sourceCardinality;
-    }
-
-    public String getSourceTitle() {
-        return sourceTitle;
-    }
-
-    public void setSourceTitle(String sourceTitle) {
-        this.sourceTitle = sourceTitle;
-    }
-
-    public Type getDestination() {
-        return destination;
-    }
-
-    public String getDestinationCardinality() {
-        return destinationCardinality;
-    }
-
-    public void setDestinationCardinality(String destinationCardinality) {
-        this.destinationCardinality = destinationCardinality;
-    }
-
-    public String getDestinationTitle() {
-        return destinationTitle;
-    }
-
-    public void setDestinationTitle(String destinationTitle) {
-        this.destinationTitle = destinationTitle;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Relationship that = (Relationship) o;
-        return bidirectional == that.bidirectional &amp;&amp;
-                type == that.type &amp;&amp;
-                Objects.equals(source, that.source) &amp;&amp;
-                Objects.equals(sourceCardinality, that.sourceCardinality) &amp;&amp;
-                Objects.equals(sourceTitle, that.sourceTitle) &amp;&amp;
-                Objects.equals(destination, that.destination) &amp;&amp;
-                Objects.equals(destinationCardinality, that.destinationCardinality) &amp;&amp;
-                Objects.equals(destinationTitle, that.destinationTitle);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(type, bidirectional, source, sourceCardinality, sourceTitle, destination, destinationCardinality, destinationTitle);
-    }
-
-    @Override
-    public String toString() {
-        return "Relationship{" +
-                "type=" + type +
-                ", bidirectional=" + bidirectional +
-                ", source=" + source +
-                ", sourceCardinality='" + sourceCardinality + '\'' +
-                ", sourceTitle='" + sourceTitle + '\'' +
-                ", destination=" + destination +
-                ", destinationCardinality='" + destinationCardinality + '\'' +
-                ", destinationTitle='" + destinationTitle + '\'' +
-                '}';
-    }
+    // boilerplate
 }</code></pre>
 </div>
 </div>
@@ -861,52 +688,92 @@ public enum RelationshipType {
 <div class="listingblock">
 <div class="title">Type.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">package cz.orany.yuml.model;
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">public class Type {
 
-import java.util.Objects;
+    private String name;
 
-public class Type {
-
-    private final String name;
-
-    public Type(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Type type = (Type) o;
-        return Objects.equals(name, type.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name);
-    }
-
-    @Override
-    public String toString() {
-        return "Type{" +
-                "name='" + name + '\'' +
-                '}';
-    }
-
+    // boilerplate
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The very first iteration uses just map constructors to create the model. This state represents what you get for free in Groovy:</p>
+<p>Following example shows how verbose is creating the diagram without any DSL improvements:</p>
 </div>
 <div class="listingblock">
 <div class="title">Creating Diagram using Constructors</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Unresolved directive in index.adoc - include::../step-01/src/test/groovy/cz/orany/yuml/model/Diagram00Spec.groovy[tag=constructors]</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Diagram diagram =  new Diagram()
+
+diagram.notes.add(new Note(
+    text: 'You can stick notes on diagrams too!',
+    color: 'skyblue'
+))
+
+Type customer = new Type(name: 'Customer')
+Type order = new Type(name: 'Order')
+Type lineItem = new Type(name: 'LineItem')
+Type deliveryMethod = new Type(name: 'DeliveryMethod')
+Type product = new Type(name: 'Product')
+Type category = new Type(name: 'Category')
+Type nationalDeliveryMethod = new Type(name: 'National')
+Type internationalDeliveryMethod = new Type(name: 'International')
+
+diagram.types.add(customer)
+diagram.types.add(order)
+diagram.types.add(lineItem)
+diagram.types.add(deliveryMethod)
+diagram.types.add(product)
+diagram.types.add(category)
+diagram.types.add(nationalDeliveryMethod)
+diagram.types.add(internationalDeliveryMethod)
+
+diagram.relationships.add(new Relationship(
+    source: customer,
+    sourceCardinality: '1',
+    destinationTitle: 'orders',
+    destination: order,
+    destinationCardinality: '0..*',
+    type: RelationshipType.AGGREGATION
+))
+
+diagram.relationships.add(new Relationship(
+    source: order,
+    sourceCardinality: '*',
+    destination: lineItem,
+    destinationCardinality: '*',
+    type: RelationshipType.COMPOSITION
+))
+
+diagram.relationships.add(new Relationship(
+    source: order,
+    destination: deliveryMethod,
+    destinationCardinality: '1'
+))
+
+diagram.relationships.add(new Relationship(
+    source: order,
+    sourceCardinality: '*',
+    destination: product,
+    destinationCardinality: '*'
+))
+
+diagram.relationships.add(new Relationship(
+    source: category,
+    destination: product,
+    bidirectional: true
+))
+
+diagram.relationships.add(new Relationship(
+    source: nationalDeliveryMethod,
+    destination: deliveryMethod,
+    type: RelationshipType.INHERITANCE
+))
+
+diagram.relationships.add(new Relationship(
+    source: internationalDeliveryMethod,
+    destination: deliveryMethod,
+    type: RelationshipType.INHERITANCE
+))</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1717,7 +1584,7 @@ helper wrappers for closures and popular <code>java.util.function.</code> types.
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-03-13 14:10:51 +00:00
+Last updated 2019-03-13 14:47:45 +00:00
 </div>
 </div>
 </body>
