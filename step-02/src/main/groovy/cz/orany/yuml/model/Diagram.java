@@ -45,12 +45,19 @@ public class Diagram {
         return relationship(source, RelationshipType.COMPOSITION, destination, configuration);
     }
 
-    public Relationship relationship(String source, RelationshipType type, String destination, Consumer<Relationship> configuration) {
+    // tag::relationship[]
+    public Relationship relationship(
+            String source,
+            RelationshipType type,
+            String destination,
+            Consumer<Relationship> configuration
+    ) {
         Relationship relationship = new Relationship(type(source), type, type(destination));
         configuration.accept(relationship);
         relationships.add(relationship);
         return relationship;
     }
+    // end::relationship[]
 
     public Collection<Note> getNotes() {
         return Collections.unmodifiableCollection(notes);

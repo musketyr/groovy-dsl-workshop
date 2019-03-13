@@ -33,17 +33,18 @@ class Diagram03Spec extends Specification {
             'orders'                        | buildOrderDiagram()                     | EXPECTED_DIAGRAM
     }
 
-    @CompileStatic
+    // tag::dsl[]
+    @CompileStatic                                                                      // <1>
     private static Diagram buildOrderDiagram() {
-        Diagram.build { Diagram d ->
+        Diagram.build { Diagram d ->                                                    // <2>
             note('You can stick notes on diagrams too!', 'skyblue')
 
-            aggregation('Customer', 'Order') {
-                source cardinality: '1'
+            aggregation('Customer', 'Order') {                                          // <3>
+                source cardinality: '1'                                                 // <4>
                 destination cardinality: '0..*', title: 'orders'
             }
 
-            buildOrderTypes(d)
+            buildOrderTypes(d)                                                          // <5>
 
             association('Category', 'Product') {
                 bidirectional true
@@ -53,6 +54,7 @@ class Diagram03Spec extends Specification {
             type 'International' inherits from type 'DeliveryMethod'
         }
     }
+    // end::dsl[]
 
     @CompileStatic
     private static Relationship buildOrderTypes(Diagram diagram) {

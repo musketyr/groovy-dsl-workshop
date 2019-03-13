@@ -11,16 +11,16 @@ import space.jasan.support.groovy.closure.ConsumerWithDelegate;
 
 public class DiagramStaticExtensions {
 
-    public static Diagram build(
-        Diagram self,
-        @DelegatesTo(value = Diagram.class, strategy = Closure.DELEGATE_FIRST)
-        @ClosureParams(value = SimpleType.class, options = "cz.orany.yuml.model.Diagram")
-        Closure<? extends DiagramContent> definition
+    public static Diagram build(                                                        // <1>
+        Diagram self,                                                                   // <2>
+        @DelegatesTo(value = Diagram.class, strategy = Closure.DELEGATE_FIRST)          // <3>
+        @ClosureParams(value=SimpleType.class, options="cz.orany.yuml.model.Diagram")   // <4>
+        Closure<? extends DiagramContent> definition                                    // <5>
     ) {
-        return Diagram.create(ConsumerWithDelegate.create(definition));
+        return Diagram.create(ConsumerWithDelegate.create(definition));                 // <6>
     }
 
-    public static DiagramKeywords.From getFrom(Diagram self) {
+    public static DiagramKeywords.From getFrom(Diagram self) {                          // <7>
         return DiagramKeywords.From.FROM;
     }
 }

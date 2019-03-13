@@ -13,10 +13,12 @@ import space.jasan.support.groovy.closure.ConsumerWithDelegate;
 
 import java.util.Map;
 
+// tag::header[]
 public class DiagramExtensions {
 
     private static final String CARDINALITY = "cardinality";
     private static final String TITLE = "title";
+    // end::header[]
 
     public static Relationship association(
             Diagram diagram,
@@ -62,6 +64,7 @@ public class DiagramExtensions {
         return relationship(diagram, source, RelationshipType.COMPOSITION, destination, configuration);
     }
 
+    // tag::methods[]
     public static Relationship relationship(
             Diagram diagram,
             String source,
@@ -74,19 +77,21 @@ public class DiagramExtensions {
         return diagram.relationship(source, type, destination, ConsumerWithDelegate.create(configuration));
     }
 
-    public static Relationship source(
-            Relationship self,
-            @NamedParams({
-                    @NamedParam(value = CARDINALITY, type = String.class),
+
+    public static Relationship source(                                                  // <1>
+            Relationship self,                                                          // <2>
+            @NamedParams({                                                              // <3>
+                    @NamedParam(value = CARDINALITY, type = String.class),              // <4>
                     @NamedParam(value = TITLE, type = String.class)
             })
-                    Map<String, String> cardinalityAndTitle
+                    Map<String, String> cardinalityAndTitle                             // <5>
     ) {
         return self.source(
                 cardinalityAndTitle.get(CARDINALITY),
                 cardinalityAndTitle.get(TITLE)
         );
     }
+    // end::methods[]
 
     public static Relationship destination(
             Relationship self,

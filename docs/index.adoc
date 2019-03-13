@@ -132,7 +132,7 @@ include::../step-00/src/test/groovy/cz/orany/yuml/model/Diagram00Spec.groovy[tag
 
 The initial version is very verbose and there is definitely lot of place for the improvement in future steps.
 
-== 1. Managing Diagram Content
+== 1. Self-managed Content
 
 The most of the verbosity of the initial example originates from manual handling
 of diagram's content - relationships, notes and types. Let's make `Diagram` class responsible for managing these items.
@@ -140,7 +140,7 @@ of diagram's content - relationships, notes and types. Let's make `Diagram` clas
 [source,groovy,indent=0,options="nowrap"]
 .Diagram Responsible for Content Management
 ----
-include::../step-01/src/test/groovy/cz/orany/yuml/model/Diagram02Spec.groovy[tag=with]
+include::../step-01/src/test/groovy/cz/orany/yuml/model/Diagram01Spec.groovy[tag=with]
 ----
 
 Methods `note`, `type` and `relationship` are now responsible for creating or referencing the particular content of the diagram.
@@ -149,102 +149,125 @@ replace method `with` with our own implementation.
 
 === Tasks
 
-1. Implement methods `note`, `type` and `relationship` in `Diagram` class to manage diagram content.
-Methods must not create duplicates for the same input.
+1. Implement methods `note`, `type` and `relationship` in `Diagram` class to manage diagram content. Methods must not create duplicates for the same input.
 2. Make `Diagram02Spec.groovy` passing.
 
-== 3. Closures
+== 2. Basic Java DSL
 
 In this step we are going to replace calling `with` method with custom methods.
+As we write your DSL code in Java we start with implementation using `Consumer`
+functional interface.
 
-[source,groovy,indent=0,options="nowrap"]
-.Methods Accepting Closures
+[source,java,indent=0,options="nowrap"]
+.Java Version of the DSL
 ----
-include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram03Spec.groovy[tag=closures]
+include::../step-02/src/test/groovy/cz/orany/yuml/model/Diagram02Test.java[tag=build]
 ----
 
-You can see there are many new methods accepting closures. They all simplifies calling the
-base method `relationship` which can look like following one:
+You can see there are many new methods accepting lambda expressions.
+They all simplifies calling the base method `relationship`:
 
-[source,groovy,indent=0,options="nowrap"]
-.Methods Accepting Closures - Implementation
+[source,java,indent=0,options="nowrap"]
+.Methods Accepting Consumer
 ----
-Relationship relationship(
-    String source,
-    RelationshipType relationshipType,
-    String destination,
-    @DelegatesTo(                                                                       // <1>
-        value = Relationship,
-        strategy = Closure.DELEGATE_FIRST
-    )
-    Closure additionalProperties = Closure.IDENTITY
-) {
-    Relationship relationship = new Relationship(
-        type(source),
-        relationshipType,
-        type(destination)
-    )
-    relationship.with additionalProperties                                              // <2>
-    this.relationships.add(relationship)
-    return relationship
-}
+include::../step-02/src/main/groovy/cz/orany/yuml/model/Diagram.java[tag=relationship]
 ----
-<1> To give the static compiler and IDE hint we need to use the annotation `@DelegatesTo` to specify which
-type will be used as a delegate of the closure. The delegate is a primary/secondary/only receiver
-of the method calls within the closure definition.
-<2> Calling the closure can be still delegated to method `with` which does exactly what we need
 
-Inheritance in the initial example is handled using a fluent DSL. Fluent DSL uses a feature called http://docs.groovy-lang.org/docs/latest/html/documentation/core-domain-specific-languages.html#_command_chains[Command Chains]
+Declaring inheritance is handled using a fluent DSL. Fluent DSL uses a feature called
+http://docs.groovy-lang.org/docs/latest/html/documentation/core-domain-specific-languages.html#_command_chains[Command Chains]
 which allows to skip the parentheses.
 
-`inherits` is just a regular method of `Type`.
+Method `inherits` is just a very simple method of `Type` which returns instance of `InheritanceBuilder`
+which handles rest of the DSL statement.
 
-[source,groovy,indent=0,options="nowrap"]
+[source,java,indent=0,options="nowrap"]
 .Method `inherits`
 ----
-InheritanceBuilder inherits(From from) {
-    return new InheritanceBuilder(diagram, this)
-}
+include::../step-02/src/main/groovy/cz/orany/yuml/model/Type.java[tag=inherits]
 ----
 
-`InheritanceBuilder` is a helper class to specify the rest of the information.`From` is just an enum
-returned from `Diagram.getFrom()` static method.
+`InheritanceBuilder` is a helper class to specify the rest of the information. `From` is just an enum
+with single value `FROM` which is passed into the DSL from static import.
 
-[source,groovy,indent=0,options="nowrap"]
+[source,java,indent=0,options="nowrap"]
 .Class `InheritanceBuilder`
 ----
-@CompileStatic
-class InheritanceBuilder {
-
-    private final Type source
-    private final Diagram diagram
-
-
-    InheritanceBuilder(Diagram diagram, Type destination) {
-        this.source = destination
-        this.diagram = diagram
-    }
-
-    Relationship type(String destination) {
-        return diagram.inheritance(source.name, destination)
-    }
-}
-----
-
-Here is another example of Fluent DSL to specify the cardinality of the items:
-
-[source,groovy,indent=0,options="nowrap"]
-.Fluent DSL
-----
-include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram03Spec.groovy[tag=fluent]
+include::../step-02/src/main/groovy/cz/orany/yuml/model/InheritanceBuilder.java[]
 ----
 
 === Tasks
-1. Implement method accepting closures for building relationships
-2. Implement method accepting closures as shortcuts for each relationship type
-3. Implement fluent DSL for describing inheritance
-4. Implement fluent DSL for describing cardinality and title
-5. Make `Diagram03Spec` passing
+1. Implement static method accepting consumer for building diagram.
+2. Implement methods accepting consumer for building relationships of different types.
+3. Implement fluent DSL for describing inheritance.
+
+
+== 3. Basic Groovy DSL
+
+It is quite easy to add groovy DSL extension once we have methods accepting functional types. Here is an example of
+the desired DSL in Groovy.
+
+[source,groovy,indent=0,options="nowrap"]
+.Groovy Version of the DSL
+----
+include::../step-03/src/test/groovy/cz/orany/yuml/model/Diagram03Spec.groovy[tag=dsl]
+----
+<1> The goal is to give the static compiler enough hints to be able to compile the code statically
+<2> New static method in the `Diagram` class which delegates the closure to the instance of `Diagram` class and which passes thesame instance of `Diagram` class as a single parameter of the closure
+<3> New method in the `Diagram` class which helps building a `Relationship`
+<4> New method in the `Relationship` class which accepts named arguments and helps specifying the cardinality and title
+<5> The closure parameter `Diagram d` can be used extract parts of the diagram definition to separate method
+
+It is a good practise not to mix Java API and Groovy API together so let's use http://groovy-lang.org/metaprogramming.html#_extension_modules[Groovy Extension Modules]
+to add additional methods to our current Java API.
+
+Let's create a extension module descriptor text file called `org.codehaus.groovy.runtime.ExtensionModule` in `src/main/resources/META-INF/services/`
+
+.Extension Module Descriptor
+----
+include::../step-03/src/main/resources/META-INF/services/org.codehaus.groovy.runtime.ExtensionModule[]
+----
+
+Obviously we need create two new classes as well - `DiagramStaticExtensions` and `DiagramExtensions`
+
+[source,java,indent=0,options="nowrap"]
+.Static Extension Class
+----
+include::../step-03/src/main/groovy/cz/orany/yuml/groovy/DiagramStaticExtensions.java[]
+----
+<1> Add a new static method called `build` ...
+<2> ... to the `Diagram` class
+<3> `@DelegatesTo` tells the compiler and IDE which object will be send as a delegate
+<4> `@ClosureParams` tells the compiler and IDE which object will be passed as closure parameters
+<5> Return value of the closure should be the common type of the return values of every possible DSL statement to prevent unfinished statements such as `type 'Type' inherits from`
+<6> `ConsumerWithDelegates` is a helper class from https://github.com/jasanspace/groovy-closure-support[Groovy Closure Support] library which helps using
+closures with methods which accepts common Java functional interfaces such as `Consumer`
+<7> Shortcut to `from` keyword so no static imports are required in Groovy code
+
+WARNING: Please, pay attention that the name of the static method added to `Diagram` class is different (`build`) then
+the one accepting `Consumer` (`create`). There is a bug in groovy which prevents overloading static methods.
+The restriction does not apply on the instance methods.
+
+[source,java,indent=0,options="nowrap"]
+.Extension Class
+----
+include::../step-03/src/main/groovy/cz/orany/yuml/groovy/DiagramExtensions.java[tag=header]
+
+include::../step-03/src/main/groovy/cz/orany/yuml/groovy/DiagramExtensions.java[tag=methods]
+
+    // rest of the methods
+}
+----
+<1> Add a new method called `source` ...
+<2> ... to the `Relationship` class
+<3> `@NamedParams` aggregates the possible named parameters
+<4> For example parameter `cardinality` of type `String`
+<5> The argument itself is still just plain old `Map`
+
+=== Tasks
+1. Add a static method `build` accepting closure to the `Diagram` class
+2. Add a shortcut keyword `from` to the `Diagram` class
+3. Add methods for creating relationships to the `Diagram` class which accept closures
+4. Add methods to specify cardinality and title to the `Relationship` clas which accept named parameters
 
 == 4. API Extraction
 

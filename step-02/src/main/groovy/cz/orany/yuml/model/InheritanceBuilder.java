@@ -2,7 +2,6 @@ package cz.orany.yuml.model;
 
 public class InheritanceBuilder {
 
-
     private final Diagram diagram;
     private final Type type;
 

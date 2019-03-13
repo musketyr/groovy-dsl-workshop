@@ -17,7 +17,7 @@ public class Diagram02Test {
         Diagram diagram = buildDiagram();
         Assert.assertEquals(EXPECTED_TEXT, printer.print(diagram));
     }
-
+    // tag::build[]
     private Diagram buildDiagram() {
         return Diagram.create(d -> {
             d.note("You can stick notes on diagrams too!", "skyblue");
@@ -49,5 +49,6 @@ public class Diagram02Test {
             d.type("International").inherits(from).type("DeliveryMethod");
         });
     }
+    // end::build[]
 
 }

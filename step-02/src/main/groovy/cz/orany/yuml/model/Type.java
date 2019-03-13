@@ -12,9 +12,11 @@ public class Type {
         this.name = name;
     }
 
+    // tag::inherits[]
     public InheritanceBuilder inherits(DiagramKeywords.From from) {
         return new InheritanceBuilder(diagram, this);
     }
+    // end::inherits[]
 
     public String getName() {
         return name;
