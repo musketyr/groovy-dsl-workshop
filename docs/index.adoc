@@ -77,7 +77,7 @@ First, we should get familiar with the data model in `cz.orany.yuml.model` packa
 [source,java,indent=0,options="nowrap"]
 .Diagram.java
 ----
-include::../step-00/src/main/java/cz/orany/yuml/model/Diagram.java[]
+include::../step-00/src/main/groovy/cz/orany/yuml/model/Diagram.java[]
 ----
 
 `Note` is a simple box placed next to the diagram which can have it's `text` and `color`.
@@ -85,7 +85,7 @@ include::../step-00/src/main/java/cz/orany/yuml/model/Diagram.java[]
 [source,java,indent=0,options="nowrap"]
 .Note.java
 ----
-include::../step-01/src/main/java/cz/orany/yuml/model/Note.java[]
+include::../step-01/src/main/groovy/cz/orany/yuml/model/Note.java[]
 ----
 
 `Relationship` represents relationship between two types. Each relationship has
@@ -95,13 +95,13 @@ cardinality and title for the `source` and `destination`
 [source,java,indent=0,options="nowrap"]
 .Relationship.java
 ----
-include::../step-01/src/main/java/cz/orany/yuml/model/Relationship.java[]
+include::../step-01/src/main/groovy/cz/orany/yuml/model/Relationship.java[]
 ----
 
 [source,java,indent=0,options="nowrap"]
 .RelationshipType.java
 ----
-include::../step-01/src/main/java/cz/orany/yuml/model/RelationshipType.java[]
+include::../step-01/src/main/groovy/cz/orany/yuml/model/RelationshipType.java[]
 ----
 
 `Type` is a data class determined by it's `name`.
@@ -109,7 +109,7 @@ include::../step-01/src/main/java/cz/orany/yuml/model/RelationshipType.java[]
 [source,java,indent=0,options="nowrap"]
 .Type.java
 ----
-include::../step-01/src/main/java/cz/orany/yuml/model/Type.java[]
+include::../step-01/src/main/groovy/cz/orany/yuml/model/Type.java[]
 ----
 
 The very first iteration uses just map constructors to create the model. This state represents what you get for free in Groovy:
