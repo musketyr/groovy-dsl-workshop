@@ -4,4 +4,6 @@ include 'step-00'
 include 'step-01'
 include 'step-02'
 include 'step-03'
+include 'step-04'
+include 'step-99'
 
