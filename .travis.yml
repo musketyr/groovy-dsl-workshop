@@ -1,17 +1,18 @@
 language: groovy
-
 jdk:
-  - oraclejdk8
-
+- oraclejdk8
 before_cache:
-  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 cache:
   directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
-
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
 deploy:
   provider: script
   script: bash ./gradlew publishGhPages --stacktrace
   on:
     branch: master
+env:
+  global:
+    # GITHUB_TOKEN
+    secure: LjV1iiwvlz89Ddk6IiRyC1TJf9NeiJfF14q752zj72sXO/VvABzGVN+pqFdauwBE18b1UpHqZm968pOAXnkbk1Fw5nLEdHF2k6b9qKsHe+XDl+UPUkrkQKJwfTW7N8RlxSIfQq2KT42/H64PgSPk/Z3jOstqDa6d48FUF9SSFK/9pLBzvA9F2s+LXSUFw0yH15BucK3tIH7YJYO0beytDObQI2nFoBPJp2WOCB9a+/rMZDTCAjrR1AYHMP0kKGuSnHWz4QFpRBSU553oXul8+X8flh4KEwIi0cjS9aw3C9PYL2VBUmJB1eoun+5jrUCGQBtrdNIQcWWj8UfEi2Jkb9t6WkSdzZd7nIBrEqskvD7Y7soFF76piqFUwO1v2zz6jlN86IzRb2wxdiCuMMbZwH3nfvGACJY6uaXyVQhdx0DE1bvipCOM6/1XVj6mSm5IxtB7YuPVg2N3McMY0kPtwRvGaAy/qFN9WVfVbUXVi+VxuG6j23Yg8PXpgaCqEGrqylcZXn6JQ8OR0TM9lpSsoO714+QjLTkPZA6Z5CoFujVnnjvgGpwb8QYsLGsYOq9TGYBRyS8akEzrEvqTGpumm8OKzs1Qzwz83+iIRZk+83yP5L7hzx7PU+ukeLULqC2CTewHfGEYxwzrLV8U4msljiBfsA2pEZCh+AZ5+M6wIAk=
