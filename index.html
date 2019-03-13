@@ -614,7 +614,67 @@ for further reference on writing Groovy DSLs in Java.</p>
 <div class="listingblock">
 <div class="title">Diagram.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-00/src/main/java/cz/orany/yuml/model/Diagram.java[]</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">package cz.orany.yuml.model;
+
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+
+public class Diagram {
+
+    private Collection&lt;Note&gt; notes = new LinkedHashSet&lt;&gt;();
+    private Collection&lt;Type&gt; types = new LinkedHashSet&lt;&gt;();
+    private Collection&lt;Relationship&gt; relationships = new LinkedHashSet&lt;&gt;();
+
+    public Collection&lt;Note&gt; getNotes() {
+        return notes;
+    }
+
+    public void setNotes(Collection&lt;Note&gt; notes) {
+        this.notes = notes;
+    }
+
+    public Collection&lt;Type&gt; getTypes() {
+        return types;
+    }
+
+    public void setTypes(Collection&lt;Type&gt; types) {
+        this.types = types;
+    }
+
+    public Collection&lt;Relationship&gt; getRelationships() {
+        return relationships;
+    }
+
+    public void setRelationships(Collection&lt;Relationship&gt; relationships) {
+        this.relationships = relationships;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Diagram diagram = (Diagram) o;
+        return Objects.equals(notes, diagram.notes) &amp;&amp;
+                Objects.equals(types, diagram.types) &amp;&amp;
+                Objects.equals(relationships, diagram.relationships);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(notes, types, relationships);
+    }
+
+    @Override
+    public String toString() {
+        return "Diagram{" +
+                "notes=" + notes +
+                ", types=" + types +
+                ", relationships=" + relationships +
+                '}';
+    }
+
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -623,7 +683,51 @@ for further reference on writing Groovy DSLs in Java.</p>
 <div class="listingblock">
 <div class="title">Note.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-01/src/main/java/cz/orany/yuml/model/Note.java[]</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">package cz.orany.yuml.model;
+
+import java.util.Objects;
+
+public class Note {
+
+    private final String text;
+    private final String color;
+
+    public Note(String text, String color) {
+        this.text = text;
+        this.color = color;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Note note = (Note) o;
+        return Objects.equals(text, note.text) &amp;&amp;
+                Objects.equals(color, note.color);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(text, color);
+    }
+
+    @Override
+    public String toString() {
+        return "Note{" +
+                "text='" + text + '\'' +
+                ", color='" + color + '\'' +
+                '}';
+    }
+
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -634,13 +738,121 @@ cardinality and title for the <code>source</code> and <code>destination</code></
 <div class="listingblock">
 <div class="title">Relationship.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-01/src/main/java/cz/orany/yuml/model/Relationship.java[]</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">package cz.orany.yuml.model;
+
+import java.util.Objects;
+
+public class Relationship {
+
+    private final RelationshipType type;
+    private boolean bidirectional;
+    private final Type source;
+    private String sourceCardinality;
+    private String sourceTitle;
+    private final Type destination;
+    private String destinationCardinality;
+    private String destinationTitle;public RelationshipType getType() {
+        return type;
+    }
+
+    public Relationship(Type source, RelationshipType type, Type destination) {
+        this.type = type;
+        this.source = source;
+        this.destination = destination;
+    }
+
+    public boolean isBidirectional() {
+        return bidirectional;
+    }
+
+    public void setBidirectional(boolean bidirectional) {
+        this.bidirectional = bidirectional;
+    }
+
+    public Type getSource() {
+        return source;
+    }
+
+    public String getSourceCardinality() {
+        return sourceCardinality;
+    }
+
+    public void setSourceCardinality(String sourceCardinality) {
+        this.sourceCardinality = sourceCardinality;
+    }
+
+    public String getSourceTitle() {
+        return sourceTitle;
+    }
+
+    public void setSourceTitle(String sourceTitle) {
+        this.sourceTitle = sourceTitle;
+    }
+
+    public Type getDestination() {
+        return destination;
+    }
+
+    public String getDestinationCardinality() {
+        return destinationCardinality;
+    }
+
+    public void setDestinationCardinality(String destinationCardinality) {
+        this.destinationCardinality = destinationCardinality;
+    }
+
+    public String getDestinationTitle() {
+        return destinationTitle;
+    }
+
+    public void setDestinationTitle(String destinationTitle) {
+        this.destinationTitle = destinationTitle;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Relationship that = (Relationship) o;
+        return bidirectional == that.bidirectional &amp;&amp;
+                type == that.type &amp;&amp;
+                Objects.equals(source, that.source) &amp;&amp;
+                Objects.equals(sourceCardinality, that.sourceCardinality) &amp;&amp;
+                Objects.equals(sourceTitle, that.sourceTitle) &amp;&amp;
+                Objects.equals(destination, that.destination) &amp;&amp;
+                Objects.equals(destinationCardinality, that.destinationCardinality) &amp;&amp;
+                Objects.equals(destinationTitle, that.destinationTitle);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, bidirectional, source, sourceCardinality, sourceTitle, destination, destinationCardinality, destinationTitle);
+    }
+
+    @Override
+    public String toString() {
+        return "Relationship{" +
+                "type=" + type +
+                ", bidirectional=" + bidirectional +
+                ", source=" + source +
+                ", sourceCardinality='" + sourceCardinality + '\'' +
+                ", sourceTitle='" + sourceTitle + '\'' +
+                ", destination=" + destination +
+                ", destinationCardinality='" + destinationCardinality + '\'' +
+                ", destinationTitle='" + destinationTitle + '\'' +
+                '}';
+    }
+}</code></pre>
 </div>
 </div>
 <div class="listingblock">
 <div class="title">RelationshipType.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-01/src/main/java/cz/orany/yuml/model/RelationshipType.java[]</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">package cz.orany.yuml.model;
+
+public enum RelationshipType {
+    ASSOCIATION, AGGREGATION, COMPOSITION, INHERITANCE;
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -649,7 +861,43 @@ cardinality and title for the <code>source</code> and <code>destination</code></
 <div class="listingblock">
 <div class="title">Type.java</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">Unresolved directive in index.adoc - include::../step-01/src/main/java/cz/orany/yuml/model/Type.java[]</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">package cz.orany.yuml.model;
+
+import java.util.Objects;
+
+public class Type {
+
+    private final String name;
+
+    public Type(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Type type = (Type) o;
+        return Objects.equals(name, type.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
+    }
+
+    @Override
+    public String toString() {
+        return "Type{" +
+                "name='" + name + '\'' +
+                '}';
+    }
+
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1469,7 +1717,7 @@ helper wrappers for closures and popular <code>java.util.function.</code> types.
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-03-13 14:09:40 +00:00
+Last updated 2019-03-13 14:10:51 +00:00
 </div>
 </div>
 </body>
