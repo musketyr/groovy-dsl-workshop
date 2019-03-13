@@ -7,18 +7,92 @@ String currentVersion = '1.0.0'
 
 version = currentVersion
 
+subprojects {
+    apply plugin: 'groovy'
+
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        compile group: 'org.codehaus.groovy', name: 'groovy', version: '2.5.6'
+        compile group: 'space.jasan', name: 'groovy-closure-support', version: '0.5.1'
+
+        testCompile group: 'org.spockframework', name: 'spock-core', version: '1.3-groovy-2.5'
+    }
+}
 
 task exercisesArchive(type: Zip) {
     archiveName = 'groovy-dsl-workshop.zip'
     from('.') {
-        exclude '.git'
-        exclude '.idea'
-        exclude '**/.gradle'
-        exclude '**/build'
-        exclude '**/node_modules'
-        exclude 'docs'
-        exclude '.gitignore'
-        exclude 'README.adoc'
+         exclude '.git'
+         exclude '.idea'
+         exclude '**/.gradle'
+         exclude '**/build'
+         exclude '**/node_modules'
+         exclude 'docs'
+         exclude '.gitignore'
+         exclude 'README.*'
+         exclude 'step-00'
+         exclude 'step-01'
+         exclude 'step-02'
+         exclude 'step-03'
+         exclude 'step-04'
+         exclude 'step-05'
+    }
+
+    from ('step-00') {
+        include 'src/main/groovy/**'
+        include 'src/main/resources/**'
+        into 'step-01'
+    }
+    from ('step-01') {
+        include 'src/test/groovy/**'
+        into 'step-01'
+    }
+
+    from ('step-01') {
+        include 'src/main/groovy/**'
+        include 'src/main/resources/**'
+        into 'step-02'
+    }
+    from ('step-02') {
+        include 'src/test/groovy/**'
+        into 'step-02'
+    }
+
+    from ('step-02') {
+        include 'src/main/groovy/**'
+        include 'src/main/resources/**'
+        into 'step-03'
+    }
+    from ('step-03') {
+        include 'src/test/groovy/**'
+        into 'step-03'
+    }
+
+    from ('step-03') {
+        include 'src/main/groovy/**'
+        include 'src/main/resources/**'
+        into 'step-04'
+    }
+    from ('step-04') {
+        include 'src/test/groovy/**'
+        into 'step-04'
+    }
+
+    from ('step-04') {
+        include 'src/main/groovy/**'
+        include 'src/main/resources/**'
+        into 'step-05'
+    }
+    from ('step-05') {
+        include 'src/test/groovy/**'
+        into 'step-05'
+    }
+
+    from ('step-05') {
+        into 'step-99'
     }
 }
 

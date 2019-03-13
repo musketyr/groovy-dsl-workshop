@@ -49,12 +49,9 @@ You can execute tests by running following command
 ./gradlew test
 ```
 
-This will execute all the tests. The tests are labeled `DiagramXXSpec` where `XX` is number of the exercise.
-Only `Diagram01Spec` passes at the beginning. Your task is to make the necessary chagnes to make the rest of the tests
-passing. Some of them will required uncommenting picese of code inside the tests but the test will tell you itself
-if uncommenting is required.
+This will execute all the tests. Each exercise is
 
-== 1. Introduction
+== Introduction
 
 During this workshop, you are going to create DSL for https://yuml.me/[yUML.me] diagrams.
 yUML helps to create simple UML diagram online. Its simplified data model is shown in the following diagram.
@@ -62,60 +59,64 @@ yUML helps to create simple UML diagram online. Its simplified data model is sho
 .YUML Diagram's Model
 image:yuml-diagram.png[yUML Diagram's Model]
 
-In this step, there is no extra work then get familiar with the codebase.
-You can inspect the implementation of the data model in `cz.orany.yuml.model` package.
+
+Although we are implementing Groovy DSL most of the DSL code will be written in Java. This approach will help you
+to reach greater audience and help us avoid some common pitfalls more easily. See https://medium.com/p/99bd118538b4[The Resignation: Rewriting the Groovy DSL builder into Java]
+for further reference on writing Groovy DSLs in Java.
+
+First, we should get familiar with the data model in `cz.orany.yuml.model` package.
 
 `Diagram` represents the diagram which can contain notes, types and their relationships.
 
-[source,groovy,indent=0,options="nowrap"]
-.Diagram.groovy
+[source,java,indent=0,options="nowrap"]
+.Diagram.java
 ----
-include::../yuml/src/main/groovy/cz/orany/yuml/model/Diagram.groovy[]
+include::../step-00/src/main/java/cz/orany/yuml/model/Diagram.java[]
 ----
 
 `Note` is a simple box placed next to the diagram which can have it's `text` and `color`.
 
-[source,groovy,indent=0,options="nowrap"]
-.Note.groovy
+[source,java,indent=0,options="nowrap"]
+.Note.java
 ----
-include::../yuml/src/main/groovy/cz/orany/yuml/model/Note.groovy[]
+include::../step-00/src/main/java/cz/orany/yuml/model/Note.java[]
 ----
 
 `Relationship` represents relationship between two types. Each relationship has
 it's `type`, `source` and `destination`. Relationships can be `bidirectional`. You can specify
 cardinality and title for the `source` and `destination`
 
-[source,groovy,indent=0,options="nowrap"]
-.Relationship.groovy
+[source,java,indent=0,options="nowrap"]
+.Relationship.java
 ----
-include::../yuml/src/main/groovy/cz/orany/yuml/model/Relationship.groovy[]
+include::../step-00/src/main/java/cz/orany/yuml/model/Relationship.java[]
 ----
 
-[source,groovy,indent=0,options="nowrap"]
-.RelationshipType.groovy
+[source,java,indent=0,options="nowrap"]
+.RelationshipType.java
 ----
-include::../yuml/src/main/groovy/cz/orany/yuml/model/RelationshipType.groovy[]
+include::../step-00/src/main/java/cz/orany/yuml/model/RelationshipType.java[]
 ----
 
 `Type` is a data class determined by it's `name`.
 
-[source,groovy,indent=0,options="nowrap"]
-.Type.groovy
+[source,java,indent=0,options="nowrap"]
+.Type.java
 ----
-include::../yuml/src/main/groovy/cz/orany/yuml/model/Type.groovy[]
+include::../step-00/src/main/java/cz/orany/yuml/model/Type.java[]
 ----
 
-The very first iteration uses just map constructors to create the model.
+The very first iteration uses just map constructors to create the model. This state represents what you get for free in Groovy:
 
 [source,groovy,indent=0,options="nowrap"]
 .Creating Diagram using Constructors
 ----
-include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram01Spec.groovy[tag=constructors]
+include::../step-00/src/test/groovy/cz/orany/yuml/model/Diagram00Spec.groovy[tag=constructors]
 ----
 
 The initial version is very verbose and there is definitely lot of place for the improvement in future steps.
 
-== 2. Managing Diagram Content
+== 1. Managing Diagram Content
 
 The most of the verbosity of the initial example originates from manual handling
 of diagram's content - relationships, notes and types. Let's make `Diagram` class responsible for managing these items.
@@ -123,7 +124,7 @@ of diagram's content - relationships, notes and types. Let's make `Diagram` clas
 [source,groovy,indent=0,options="nowrap"]
 .Diagram Responsible for Content Management
 ----
-include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram02Spec.groovy[tag=with]
+include::../step-01/src/test/groovy/cz/orany/yuml/model/Diagram02Spec.groovy[tag=with]
 ----
 
 Methods `note`, `type` and `relationship` are now responsible for creating or referencing the particular content of the diagram.
