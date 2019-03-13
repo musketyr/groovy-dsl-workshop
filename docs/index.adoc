@@ -10,7 +10,9 @@ We will create builder-pattern style DSL with nested blocks which perfectly suit
 
 We will use https://yuml.me/[yUML diagrams] (data class diagrams) as a reference domain model.
 
-This workshop is based on **Groovy DSL Builders** series which you can use as reference documentation:
+image:yuml-diagram.png[yUML Diagram's Model]
+
+This workshop is based on **Groovy DSL Builders** series which can be used as reference documentation:
 
 1. https://medium.com/p/2d5a97fa0a51[The Concept: The core concept of builders]
 2. https://medium.com/p/fda1f2ebe657[The Essence: The closures' basics]
@@ -43,13 +45,17 @@ To get started download link:archives/groovy-dsl-workshop.zip[exercise project a
 ./gradlew dependencies
 ```
 
-You can execute tests by running following command
+You can execute tests by running following command:
 
 ```
 ./gradlew test
 ```
 
-This will execute all the tests. Each exercise is
+This will execute all the tests. There are several sub-projects called `step-xx` in the archive where `xx` is number
+of the exercise. Each of exercises is covered by single test which will signal you that you have successfully finished
+all the tasks. Each sub-project contains ideal solution of the previous exercise so in case of you get stuck or
+you want to skip an exercise you get everything you need to keep coding. If you want to carry over your code
+just delete everything in `src/main` directory and replace it with the content of `src/main` directory of of your previously finished step.
 
 == Introduction
 
@@ -79,7 +85,7 @@ include::../step-00/src/main/java/cz/orany/yuml/model/Diagram.java[]
 [source,java,indent=0,options="nowrap"]
 .Note.java
 ----
-include::../step-00/src/main/java/cz/orany/yuml/model/Note.java[]
+include::../step-01/src/main/java/cz/orany/yuml/model/Note.java[]
 ----
 
 `Relationship` represents relationship between two types. Each relationship has
@@ -89,13 +95,13 @@ cardinality and title for the `source` and `destination`
 [source,java,indent=0,options="nowrap"]
 .Relationship.java
 ----
-include::../step-00/src/main/java/cz/orany/yuml/model/Relationship.java[]
+include::../step-01/src/main/java/cz/orany/yuml/model/Relationship.java[]
 ----
 
 [source,java,indent=0,options="nowrap"]
 .RelationshipType.java
 ----
-include::../step-00/src/main/java/cz/orany/yuml/model/RelationshipType.java[]
+include::../step-01/src/main/java/cz/orany/yuml/model/RelationshipType.java[]
 ----
 
 `Type` is a data class determined by it's `name`.
@@ -103,7 +109,7 @@ include::../step-00/src/main/java/cz/orany/yuml/model/RelationshipType.java[]
 [source,java,indent=0,options="nowrap"]
 .Type.java
 ----
-include::../step-00/src/main/java/cz/orany/yuml/model/Type.java[]
+include::../step-01/src/main/java/cz/orany/yuml/model/Type.java[]
 ----
 
 The very first iteration uses just map constructors to create the model. This state represents what you get for free in Groovy:
@@ -111,7 +117,7 @@ The very first iteration uses just map constructors to create the model. This st
 [source,groovy,indent=0,options="nowrap"]
 .Creating Diagram using Constructors
 ----
-include::../step-00/src/test/groovy/cz/orany/yuml/model/Diagram00Spec.groovy[tag=constructors]
+include::../step-01/src/test/groovy/cz/orany/yuml/model/Diagram00Spec.groovy[tag=constructors]
 ----
 
 The initial version is very verbose and there is definitely lot of place for the improvement in future steps.
