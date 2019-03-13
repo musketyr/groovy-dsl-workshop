@@ -269,479 +269,107 @@ include::../step-03/src/main/groovy/cz/orany/yuml/groovy/DiagramExtensions.java[
 3. Add methods for creating relationships to the `Diagram` class which accept closures
 4. Add methods to specify cardinality and title to the `Relationship` clas which accept named parameters
 
-== 4. API Extraction
+== 4. Designing for Extendability
 
-Well-crafted DSL should only expose as many feature as required. At this step, your `Diagram`
-class should expose methods for adding new parts of the diagram as well as the accessors methods.
+A good DSL is open and provides enough extension points to allow developers to extend the original functionality.
 
-Let's split the API into two separate categories, each described using Java interfaces.
+For example, some developers would like to add support for stereotypes and properties.
 
-1. API for reading diagram's content
-2. API for creating diagram's content
+[source,groovy,indent=0,options="nowrap"]
+.Groovy Version of the DSL
+----
+include::../step-04/src/test/groovy/cz/orany/yuml/model/Diagram04Spec.groovy[tag=extensions]
+----
+<1> Declaring a stereotype
+<2> Declaring type's properties
 
-`Diagram` interface will only contain methods to access the content of the diagram:
+Adding support for stereotype is pretty simple. Stereotype is just a type surrounded by `<<` and `>>`. We can achieve this
+directly in the extension class.
 
 [source,java,indent=0,options="nowrap"]
-.Diagram.java
+.Stereotype Extensions
 ----
-public interface Diagram {
-
-    static Diagram build(@DelegatesTo(value = DiagramDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure definition) {
-        return DefaultDiagramFactory.build(definition);
-    }
-
-    Collection<? extends Note> getNotes();
-    Collection<? extends Type> getTypes();
-    Collection<? extends Relationship> getRelationships();
-
-}
+include::../step-04/src/main/groovy/cz/orany/yuml/groovy/DiagramExtensions.java[tag=stereotype]
 ----
 
-`DiagramDefinition` will only contain methods for building the diagram's content
+Adding support for the properties requires more steps. First we need to declare an interface for _helper_
+objects which can gather the metadata for diagram.
 
 [source,java,indent=0,options="nowrap"]
-.DiagramDefintion.java
+.Diagram Helper
 ----
-public interface DiagramDefinition {
-
-    static From getFrom() {
-        return From.FROM;
-    }
-
-    static Integer getZero() {
-        return 0;
-    }
-
-    static Integer getOne() {
-        return 1;
-    }
-
-    static String getMany() {
-        return "*";
-    }
-
-    default Note note(String text) {
-        return note(text, null);
-    }
-
-    Note note(String text, String color);
-
-    default TypeDefinition type(String name) {
-        return type(name, Closure.IDENTITY);
-    }
-
-    TypeDefinition type(String name, @DelegatesTo(value = TypeDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure builder);
-
-    default RelationshipDefinition aggregation(String source, String destination) {
-        return aggregation(source, destination, Closure.IDENTITY);
-    }
-
-    default RelationshipDefinition aggregation(
-        String source,
-        String destination,
-        @DelegatesTo(value = RelationshipDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
-    ) {
-        return relationship(source, RelationshipType.AGGREGATION, destination, additionalProperties);
-    }
-
-    default RelationshipDefinition composition(String source, String destination) {
-        return composition(source, destination, Closure.IDENTITY);
-    }
-
-    default RelationshipDefinition composition(
-        String source,
-        String destination,
-        @DelegatesTo(value = RelationshipDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
-    ) {
-        return relationship(source, RelationshipType.COMPOSITION, destination, additionalProperties);
-    }
-
-    default RelationshipDefinition inheritance(
-        String source,
-        String destination
-    ) {
-        return inheritance(source, destination, Closure.IDENTITY);
-    }
-
-    default RelationshipDefinition inheritance(
-        String source,
-        String destination,
-        @DelegatesTo(value = RelationshipDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
-    ) {
-        return relationship(source, RelationshipType.INHERITANCE, destination, additionalProperties);
-    }
-
-    default RelationshipDefinition association(String source, String destination) {
-        return association(source, destination, Closure.IDENTITY);
-    }
-
-    default RelationshipDefinition association(
-        String source,
-        String destination,
-        @DelegatesTo(value = RelationshipDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
-    ) {
-        return relationship(source, RelationshipType.ASSOCIATION, destination, additionalProperties);
-    }
-
-    default RelationshipDefinition relationship(String source, RelationshipType relationshipType, String destination) {
-        return relationship(source, relationshipType, destination, Closure.IDENTITY);
-    }
-
-    RelationshipDefinition relationship(
-        String source,
-        RelationshipType relationshipType,
-        String destination,
-        @DelegatesTo(value = RelationshipDefinition.class, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
-    );
-
-}
+include::../step-04/src/main/groovy/cz/orany/yuml/model/DiagramHelper.java[]
 ----
 
-You can see we are fully leveraging features added in Java 8 such as static and default methods in interfaces.
-Thanks to these features the implementation is pretty minimal:
+These helpers can be added to the diagram and they simplifies access to the generic `metadata` map:
 
 [source,java,indent=0,options="nowrap"]
-.DefaultDiagram.groovy
+.Diagram Helpers and Metadata
 ----
-class DefaultDiagram implements Diagram, DiagramDefinition {
+include::../step-04/src/main/groovy/cz/orany/yuml/model/Diagram.java[tag=postprocess]
 
-    final Collection<DefaultNote> notes = new LinkedHashSet<>()
-    final Collection<DefaultRelationship> relationships = new LinkedHashSet<>()
+include::../step-04/src/main/groovy/cz/orany/yuml/model/Diagram.java[tag=helpers-and-metadata]
+----
+<1> Method `postprocess` is called when the build phase of the DSL is finished
+<2> Metadata are just a generic map with string keys
+<3> Method `configure` instantiates or reuses existing helper instance and executes some code on helper instance and returns the result
+<4> Method `postprocess` iterates all the existing helpers and gathers the metadata
 
-    private final Map<String, DefaultType> typesMap = [:].withDefault { key -> new DefaultType(this, key.toString()) }
+Now we can create a helper to store the metadata for given type:
 
-    @Override
-    Collection<? extends Type> getTypes() {
-        return typesMap.values()
-    }
+[source,java,indent=0,options="nowrap"]
+.Properites Helper
+----
+include::../step-04/src/main/groovy/cz/orany/yuml/model/PropertiesDiagramHelper.java[]
+----
+<1> Properties for each type are held in a map
+<2> Adds a property to the given type
+<3> Returns the metadata provided by this helper - the map of the types and their properties
+<4> Returns the properties of given type
 
-    @Override
-    DefaultNote note(String text, String color) {
-        Note note = new DefaultNote(text, color)
-        this.notes.add(note)
-        return note
-    }
+Now we have finally everything to add the method for adding type's properties. This is also implemented as extension method:
 
-    @Override
-    DefaultType type(String name, @DelegatesTo(value = TypeDefinition, strategy = Closure.DELEGATE_FIRST) Closure builder) {
-        DefaultType type = typesMap[name]
-        type.with builder
-        return type
-    }
+[source,java,indent=0,options="nowrap"]
+.Property Extensions
+----
+include::../step-04/src/main/groovy/cz/orany/yuml/groovy/DiagramExtensions.java[tag=property]
+----
 
-    @Override
-    DefaultRelationship relationship(
-        String source,
-        RelationshipType relationshipType,
-        String destination,
-        @DelegatesTo(value = RelationshipDefinition, strategy = Closure.DELEGATE_FIRST) Closure additionalProperties
-    ) {
-        DefaultRelationship relationship = new DefaultRelationship(type(source, Closure.IDENTITY), relationshipType, type(destination, Closure.IDENTITY))
-        relationship.with additionalProperties
-        this.relationships.add(relationship)
-        return relationship
-    }
+The last step is to update the class responsible for printing the diagram to take the properties into an account:
 
-}
+[source,java,indent=0,options="nowrap"]
+.YUML Priter with Properties
+----
+include::../step-04/src/main/groovy/cz/orany/yuml/export/YumlDiagramPrinter.java[tag=type]
 ----
 
 === Tasks
-1. Extract content (accessors) API from the current `Diagram`, `Relationship`, `Type` classes into interfaces of he same name
-2. Extract builder API from the current `Diagram`, `Relationship`, `Type` classes into into interfaces ending `Definition`
-3. Put the implementation into classes with `Default` prefix
-4. Make `Diagram04Spec` passing
+1. Add a method `stereotype` to the Groovy DSL
+2. Add a ability to specify type's properties to the Groovy DSL
+3. Update the printer class to print types' properties
 
-== 5. Closures with Parameters
+== 5. API Clean Up
 
-So far the diagrams were described in a single long method following the code-as-data principle.
-In many situations we want to keep our code DRY ("do not repeat yourself").
+The current version of the DSL allows calling all the operations of the diagram objects inside the definition.
+It is a good practice to split the methods for reading and the methods for defining the diagram into two separate
+interfaces.
 
-[source,groovy,indent=0,options="nowrap"]
-.Keeping DSL DRY
-----
-include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram05Spec.groovy[tag=dry]
-----
-<1> Send the delegate of the closure  as a parameter of the closure helps you breaking the DSL definition into smaller chunks
-<2> Using default method `with` helps you to _continue_ using the DSL even in the extracted method
-
-You need to use `@ClosureParams` annotation to help the static compiler and IDE keep track of the closure's parameters.
+See the following `Diagram` and `DiagramDefinition` classes:
 
 [source,java,indent=0,options="nowrap"]
-.Diagram.java
+.Read Operations
 ----
-TypeDefinition type(
-    String name,
-    @DelegatesTo(value = TypeDefinition.class, strategy = Closure.DELEGATE_FIRST)
-    @ClosureParams(value = SimpleType.class, options = "cz.orany.yuml.model.dsl.TypeDefinition")
-    Closure<? extends DiagramContentDefinition> builder
-);
+include::../step-05/src/main/groovy/cz/orany/yuml/model/Diagram.java[]
 ----
-
-TIP: You don't need to update the implementation classes if they still use `with` method internally
-as `with` method is already sending self as a single parameter to the closure.
-
-=== Tasks
-1. Add `@ClosureParams` annotations to the methods accepting closures and ensure the definition object is passed into the closure as a single parameter.
-2. Make `Diagram05Spec` passing
-
-== 6. Closure Pitfalls
-
-There are some common misunderstandings when we use closures, especially when the closures are nested one into another.
-
-Let's take a look on a typical example of nested closures. Assume that all the methods set the resolution strategy to
-`DELEGATE_FIRST`
-
-[source,groovy,indent=0,options="nowrap"]
-.Nested Closures
-----
-    String someProperty = 'Some Property Content'                                       // <1>
-
-    void doBuild() {
-        new SomeBuilder().levelOne {                                                    // <2>
-            levelTwo {                                                                  // <3>
-                something = someProperty                                                // <4>
-            }
-        }
-    }
-----
-<1> A class has a property which we would like to access from the nested closure
-<2> First closure definition - the closure's `owner` is instance of our class
-<3> Second closure definition - the closure's `owner` is the surrounding closure
-<4> One would expect that `someProperty` is the `someProperty` we declared in our class but as the `owner` of the
-closure is the surrounding closure with its own complicated property handling we might be actually reading property
-`someProperty` of the delegate of the surrounding closure.
-
-To workaround this problem we need to manually keep track of the `owner` of the top level closure. We can achieve this
-by updating the `DefaultDiagram` class to also hold the `owner`.
-
-[source,groovy,indent=0,options="nowrap"]
-.Creating Diagram using Constructors
-----
-class DefaultDiagram implements Diagram, DiagramDefinition {
-
-    private final Object owner;
-
-    // other fields
-
-    DefaultDiagram(Object owner) {                                                      // <1>
-        this.owner = owner
-    }
-
-    // other methods
-
-    @Override
-    DefaultType type(
-        String name,
-        @DelegatesTo(
-            value = TypeDefinition.class,
-            strategy = Closure.DELEGATE_FIRST
-        )
-        @ClosureParams(
-            value = SimpleType.class,
-            options = "cz.orany.yuml.model.dsl.TypeDefinition"
-        )
-        Closure<? extends DiagramContentDefinition> builder
-    ) {
-        DefaultType type = typesMap[name]
-        withSameOwner type, builder                                                     // <2>
-        return type
-    }
-
-    protected <V, T> V withSameOwner(T self, Closure<V> closure) {
-        final Closure<V> clonedClosure = closure.rehydrate(                             // <3>
-            self,
-            owner,
-            closure.thisObject
-        )
-        clonedClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
-        clonedClosure.call(self)
-    }
-}
-----
-<1> The `DefaultDiagram` now must be constructed with the reference to the surrounding closure's `owner`
-<2> We no longer use default `with` method but slightly updated one which also replaces the `owner` with expected one
-<3> We use closure's method `rehydrate` to create a clone with expected `owner`
-
-=== Tasks
-1. Make sure all method accepting closures properly handles the owner
-2. Make `Diagram06Spec` passing
-
-== 7. Providing Extension Points
-
-A good DSL provides an extension points which allows the developers to extend the language. In our yUML example some
-developers might want to add attribute definitions to the types or declare types as stereotypes.
-
-[source,groovy,indent=0,options="nowrap"]
-.Extensions
-----
-include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram07Spec.groovy[tag=extensions]
-----
-<1> Stereotype declaration
-<2> Property declaration
-
-The easiest way how to start extending any DSL is using Groovy's extension classes. Extension classes contains
-static methods which first argument is of the type we want to extend.
-
-For example `stereotype` can be easily handled by calling `type` with the name surrounded by `<<` and `>>`.
-
-[source,groovy,indent=0,options="nowrap"]
-.Stereoptypes Extension
-----
-public class StereotypeExtensions {
-
-    public static TypeDefinition stereotype(
-        DiagramDefinition diagram,
-        String name
-    ) {
-        return diagram.type("<<" + name + ">>");
-    }
-
-    // other extension methods
-
-}
-----
-
-To enable the class as extension module you need to create a file `META-INF/services/org.codehaus.groovy.runtime.ExtensionModule` with the following content:
-
-.Extensions Declaration
-----
-moduleName=yuml-extra
-moduleVersion=0.1.0
-extensionClasses=cz.orany.yuml.stereotype.StereotypeExtensions
-staticExtensionClasses=
-----
-
-For more complicated extensions we can introduce some generic container such as `Map<String, Object> metadata`
-into the diagram class which we can manipulate using _helper_ objects:
 
 [source,java,indent=0,options="nowrap"]
-.Metadata Helpers
+.Definition Operations
 ----
-@Override
-public <H extends DiagramHelper, R> H configure(
-    @DelegatesTo.Target("helper")
-    Class<H> helper,
-    @DelegatesTo(
-        value = DelegatesTo.Target.class,
-        target = "helper",
-        strategy = Closure.DELEGATE_FIRST,
-        genericTypeIndex = 0
-    )
-    @ClosureParams(FirstParam.FirstGenericType.class)
-    Closure<R> configuration
-) {
-    H helperInstance = (H) helperMap.computeIfAbsent(helper, {
-        helper.newInstance()
-    })
-    DefaultGroovyMethods.with(helperInstance, configuration)
-    return helperInstance
-}
-
-void postprocess() {
-    for (DiagramHelper helper : helperMap.values()) {
-        metadata.putAll(helper.metadata)
-    }
-}
+include::../step-05/src/main/groovy/cz/orany/yuml/model/DiagramDefinition.java[]
 ----
 
-We can use these helpers in another extension class to store the properties:
-
-[source,groovy,indent=0,options="nowrap"]
-.Properties Extension
-----
-CompileStatic
-class PropertiesDiagramHelperExtensions {
-
-    static TypeDefinition property(
-        TypeDefinition typeDefinition,
-        String type,
-        String name
-    ) {
-        typeDefinition
-            .diagramDefinition
-            .configure(PropertiesDiagramHelper) {
-                it.addProperty(typeDefinition.name, type, name)
-            }
-        return typeDefinition
-    }
-
-    static TypeDefinition property(
-        TypeDefinition typeDefinition,
-        Map<String, String> properties
-    ) {
-        typeDefinition
-            .diagramDefinition
-            .configure(PropertiesDiagramHelper) {
-            it.addProperties(typeDefinition.name, properties)
-        }
-        return typeDefinition
-    }
-}
-----
+As we are developing for version Java 8 and later we can move some methods directly into the `DiagramDefinition` class. All the consumers
+now uses `*Definition` interfaces only.
 
 === Tasks
-1. Create extension to support `stereotype`
-2. Create extension to support `properties`
-3. Make `Diagram07Spec` passing
-
-== 8. Java DSL
-
-As DSL creator, you will probably want to reach the widest audience possible. Plain old Java is still
-far more popular then Groovy. Rewriting your DSL into Java will help you to attract more developers who don't want or
-simply can't use Groovy as their primary language.
-
-Java 8 supports lambda expression which looks quite similar to Groovy closures but it lacks the ablity
-to alter the delegate. `Consumer`interface can be easily used instead of closures for most of the
-situations.
-
-[source,java,indent=0,options="nowrap"]
-.Diagram08Test.java
-----
-include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram08Test.java[tag=java]
-----
-
-The significant difference is the presence of the callee as `Diagram d` which is passed inside the lambda
-body.
-
-I consider a good practise to keep the Groovy code separated inside extension methods which will look like
-the original ones except the accept the original type as a first argument:
-
-[source,java,indent=0,options="nowrap"]
-.Extension method inside DiagramExtensions.java
-----
-public static RelationshipDefinition relationship(
-    DiagramDefinition self,
-    String source,
-    RelationshipType relationshipType,
-    String destination,
-    @DelegatesTo(
-        value = RelationshipDefinition.class,
-        strategy = Closure.DELEGATE_FIRST
-    )
-    @ClosureParams(
-        value = SimpleType.class,
-        options = "cz.orany.yuml.model.dsl.RelationshipDefinition"
-    )
-    Closure<? extends DiagramContentDefinition> additionalProperties
-) {
-    return self.relationship(
-        source,
-        relationshipType,
-        destination,
-        ConsumerWithDelegate.create(additionalProperties)
-    );
-}
-----
-
-`ConsumerWithDelegate` comes from Groovy Closure Support library which provides couple of
-helper wrappers for closures and popular `java.util.function.` types.
-
-=== Tasks
-1. Rewrite your DSL into Java
-2. Make `Diagram08Spec` and `Diagram08Test` passing
-
-== 9. Named Arguments
-
-== Solutions
-
-You can find reference solutions https://github.com/musketyr/yuml-dsl-builder/releases[here].
+1. Separate the read and definition roles of the diagram using interfaces

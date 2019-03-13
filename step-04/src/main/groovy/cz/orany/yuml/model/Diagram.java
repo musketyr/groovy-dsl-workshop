@@ -6,12 +6,14 @@ import java.util.function.Function;
 
 public class Diagram {
 
+    // tag::postprocess[]
     public static Diagram create(Consumer<Diagram> diagramConsumer) {
         Diagram diagram = new Diagram();
         diagramConsumer.accept(diagram);
-        diagram.postprocess();
+        diagram.postprocess();                                                          // <1>
         return diagram;
     }
+    // end::postprocess[]
 
     private Collection<Note> notes = new LinkedHashSet<>();
     private Map<String, Type> types = new LinkedHashMap<>();
@@ -74,7 +76,15 @@ public class Diagram {
         return Collections.unmodifiableCollection(relationships);
     }
 
-    public <H extends DiagramHelper, R> R configure(Class<H> helper, Function<H, R> configurationOrQuery) {
+    // tag::helpers-and-metadata[]
+    public Map<String, Object> getMetadata() {                                          // <2>
+        return metadata;
+    }
+
+    public <H extends DiagramHelper, R> R configure(                                    // <3>
+            Class<H> helper,
+            Function<H, R> configurationOrQuery
+    ) {
         H helperInstance = (H) helperMap.computeIfAbsent(helper, (h) -> {
             try {
                 return (DiagramHelper) h.newInstance();
@@ -86,15 +96,12 @@ public class Diagram {
         return configurationOrQuery.apply(helperInstance);
     }
 
-    void postprocess() {
+    void postprocess() {                                                                // <4>
         for (DiagramHelper helper : helperMap.values()) {
             metadata.putAll(helper.getMetadata());
         }
     }
-
-    public Map<String, Object> getMetadata() {
-        return metadata;
-    }
+    // end::helpers-and-metadata[]
 
     @Override
     public boolean equals(Object o) {

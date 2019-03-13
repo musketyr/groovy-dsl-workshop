@@ -86,6 +86,7 @@ class Diagram04Spec extends Specification {
         }
     }
 
+    // tag::extensions[]
     @CompileStatic
     private static Diagram buildDiagramStereotypesAndProperties() {
         Diagram.build { Diagram d ->
@@ -102,12 +103,13 @@ class Diagram04Spec extends Specification {
                 bidirectional true
             }
 
-            type 'National' inherits from stereotype 'DeliveryMethod'
+            type 'National' inherits from stereotype 'DeliveryMethod'                   // <1>
             type 'International' inherits from stereotype 'DeliveryMethod'
 
             type('Customer') {
-                property 'string', 'name'
+                property 'string', 'name'                                               // <2>
             }
         }
     }
+    // end::extensions[]
 }

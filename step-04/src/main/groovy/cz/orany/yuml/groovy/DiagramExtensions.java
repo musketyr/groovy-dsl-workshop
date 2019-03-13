@@ -110,6 +110,7 @@ public class DiagramExtensions {
         return diagram.type(name, ConsumerWithDelegate.create(configuration));
     }
 
+    // tag::stereotype[]
     public static Type stereotype(Diagram self, String name) {
         return self.type("<<" + name + ">>");
     }
@@ -117,13 +118,15 @@ public class DiagramExtensions {
     public static Relationship stereotype(InheritanceBuilder self, String name) {
         return self.type("<<" + name + ">>");
     }
+    // end::stereotype[]
 
+    // tag::property[]
     public static Type property(Type typeDefinition, String type, String name) {
-        typeDefinition.getDiagram().configure(PropertiesDiagramHelper.class, (PropertiesDiagramHelper helper) -> {
-            helper.addProperty(typeDefinition.getName(), type, name);
-            return null;
-        });
+        typeDefinition.getDiagram().configure(PropertiesDiagramHelper.class, (h) ->
+            h.addProperty(typeDefinition.getName(), type, name)
+        );
         return typeDefinition;
     }
+    // end::property[]
 
 }

@@ -36,9 +36,9 @@ public class YumlDiagramPrinter implements DiagramPrinter {
         return stringWriter.toString();
     }
 
+    // tag::type[]
     private String print(Diagram diagram, Type type) {
-        Map<String, String> properties =
-                PropertiesDiagramHelper.getProperties(diagram, type);
+        Map<String, String> properties = PropertiesDiagramHelper.getProperties(diagram, type);
 
         if (properties.isEmpty()) {
             return String.format("[%s]", type.getName());
@@ -56,6 +56,7 @@ public class YumlDiagramPrinter implements DiagramPrinter {
                 propertiesFormatted
         );
     }
+    // end::type[]
 
     private String print(Diagram d, Relationship r) {
         switch (r.getType()) {
