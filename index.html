@@ -442,39 +442,44 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </li>
 <li><a href="#_introduction">Introduction</a></li>
-<li><a href="#_1_managing_diagram_content">1. Managing Diagram Content</a>
+<li><a href="#_1_self_managed_content">1. Self-managed Content</a>
 <ul class="sectlevel2">
 <li><a href="#_tasks">Tasks</a></li>
 </ul>
 </li>
-<li><a href="#_3_closures">3. Closures</a>
+<li><a href="#_2_basic_java_dsl">2. Basic Java DSL</a>
 <ul class="sectlevel2">
 <li><a href="#_tasks_2">Tasks</a></li>
 </ul>
 </li>
-<li><a href="#_4_api_extraction">4. API Extraction</a>
+<li><a href="#_3_basic_groovy_dsl">3. Basic Groovy DSL</a>
 <ul class="sectlevel2">
 <li><a href="#_tasks_3">Tasks</a></li>
 </ul>
 </li>
-<li><a href="#_5_closures_with_parameters">5. Closures with Parameters</a>
+<li><a href="#_4_api_extraction">4. API Extraction</a>
 <ul class="sectlevel2">
 <li><a href="#_tasks_4">Tasks</a></li>
 </ul>
 </li>
-<li><a href="#_6_closure_pitfalls">6. Closure Pitfalls</a>
+<li><a href="#_5_closures_with_parameters">5. Closures with Parameters</a>
 <ul class="sectlevel2">
 <li><a href="#_tasks_5">Tasks</a></li>
 </ul>
 </li>
-<li><a href="#_7_providing_extension_points">7. Providing Extension Points</a>
+<li><a href="#_6_closure_pitfalls">6. Closure Pitfalls</a>
 <ul class="sectlevel2">
 <li><a href="#_tasks_6">Tasks</a></li>
 </ul>
 </li>
-<li><a href="#_8_java_dsl">8. Java DSL</a>
+<li><a href="#_7_providing_extension_points">7. Providing Extension Points</a>
 <ul class="sectlevel2">
 <li><a href="#_tasks_7">Tasks</a></li>
+</ul>
+</li>
+<li><a href="#_8_java_dsl">8. Java DSL</a>
+<ul class="sectlevel2">
+<li><a href="#_tasks_8">Tasks</a></li>
 </ul>
 </li>
 <li><a href="#_9_named_arguments">9. Named Arguments</a></li>
@@ -782,7 +787,7 @@ diagram.relationships.add(new Relationship(
 </div>
 </div>
 <div class="sect1">
-<h2 id="_1_managing_diagram_content">1. Managing Diagram Content</h2>
+<h2 id="_1_self_managed_content">1. Self-managed Content</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The most of the verbosity of the initial example originates from manual handling
@@ -791,7 +796,38 @@ of diagram&#8217;s content - relationships, notes and types. Let&#8217;s make <c
 <div class="listingblock">
 <div class="title">Diagram Responsible for Content Management</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Unresolved directive in index.adoc - include::../step-01/src/test/groovy/cz/orany/yuml/model/Diagram02Spec.groovy[tag=with]</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Diagram diagram =  new Diagram().with {
+    note('You can stick notes on diagrams too!','skyblue')
+
+    relationship(type('Customer'), RelationshipType.AGGREGATION, type('Order')).with {
+        sourceCardinality = '1'
+        destinationTitle = 'orders'
+        destinationCardinality = '0..*'
+    }
+
+    relationship(type('Order'), RelationshipType.COMPOSITION, type('LineItem')).with {
+        sourceCardinality = '*'
+        destinationCardinality = '*'
+    }
+
+    relationship(type('Order'), type('DeliveryMethod')).with {
+        destinationCardinality = '1'
+    }
+
+    relationship(type('Order'), type('Product')).with {
+        sourceCardinality = '*'
+        destinationCardinality ='*'
+    }
+
+    relationship(type('Category'), type('Product')).with {
+        bidirectional = true
+    }
+
+    relationship(type('National'), RelationshipType.INHERITANCE, type('DeliveryMethod'))
+    relationship(type('International'), RelationshipType.INHERITANCE, type('DeliveryMethod'))
+
+    it
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -804,8 +840,7 @@ replace method <code>with</code> with our own implementation.</p>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Implement methods <code>note</code>, <code>type</code> and <code>relationship</code> in <code>Diagram</code> class to manage diagram content.
-Methods must not create duplicates for the same input.</p>
+<p>Implement methods <code>note</code>, <code>type</code> and <code>relationship</code> in <code>Diagram</code> class to manage diagram content. Methods must not create duplicates for the same input.</p>
 </li>
 <li>
 <p>Make <code>Diagram02Spec.groovy</code> passing.</p>
@@ -816,106 +851,110 @@ Methods must not create duplicates for the same input.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_3_closures">3. Closures</h2>
+<h2 id="_2_basic_java_dsl">2. Basic Java DSL</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>In this step we are going to replace calling <code>with</code> method with custom methods.</p>
+<p>In this step we are going to replace calling <code>with</code> method with custom methods.
+As we write your DSL code in Java we start with implementation using <code>Consumer</code>
+functional interface.</p>
 </div>
 <div class="listingblock">
-<div class="title">Methods Accepting Closures</div>
+<div class="title">Java Version of the DSL</div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Unresolved directive in index.adoc - include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram03Spec.groovy[tag=closures]</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>You can see there are many new methods accepting closures. They all simplifies calling the
-base method <code>relationship</code> which can look like following one:</p>
-</div>
-<div class="listingblock">
-<div class="title">Methods Accepting Closures - Implementation</div>
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Relationship relationship(
-    String source,
-    RelationshipType relationshipType,
-    String destination,
-    @DelegatesTo(                                                                       <i class="conum" data-value="1"></i><b>(1)</b>
-        value = Relationship,
-        strategy = Closure.DELEGATE_FIRST
-    )
-    Closure additionalProperties = Closure.IDENTITY
-) {
-    Relationship relationship = new Relationship(
-        type(source),
-        relationshipType,
-        type(destination)
-    )
-    relationship.with additionalProperties                                              <i class="conum" data-value="2"></i><b>(2)</b>
-    this.relationships.add(relationship)
-    return relationship
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">private Diagram buildDiagram() {
+    return Diagram.create(d -&gt; {
+        d.note("You can stick notes on diagrams too!", "skyblue");
+
+        d.aggregation("Customer", "Order", r -&gt; {
+            r.source("1");
+            r.destination("0..*", "orders");
+        });
+
+        d.composition("Order", "LineItem", r -&gt; {
+            r.source("*");
+            r.destination("*");
+        });
+
+        d.association("Order", "DeliveryMethod", r -&gt; {
+            r.destination("1");
+        });
+
+        d.association("Order", "Product", r -&gt; {
+            r.source("*");
+            r.destination("*");
+        });
+
+        d.association("Category", "Product", r -&gt; {
+            r.bidirectional(true);
+        });
+
+        d.type("National").inherits(from).type("DeliveryMethod");
+        d.type("International").inherits(from).type("DeliveryMethod");
+    });
 }</code></pre>
 </div>
 </div>
-<div class="colist arabic">
-<table>
-<tr>
-<td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>To give the static compiler and IDE hint we need to use the annotation <code>@DelegatesTo</code> to specify which
-type will be used as a delegate of the closure. The delegate is a primary/secondary/only receiver
-of the method calls within the closure definition.</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>Calling the closure can be still delegated to method <code>with</code> which does exactly what we need</td>
-</tr>
-</table>
+<div class="paragraph">
+<p>You can see there are many new methods accepting lambda expressions.
+They all simplifies calling the base method <code>relationship</code>:</p>
+</div>
+<div class="listingblock">
+<div class="title">Methods Accepting Consumer</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">public Relationship relationship(
+        String source,
+        RelationshipType type,
+        String destination,
+        Consumer&lt;Relationship&gt; configuration
+) {
+    Relationship relationship = new Relationship(type(source), type, type(destination));
+    configuration.accept(relationship);
+    relationships.add(relationship);
+    return relationship;
+}</code></pre>
+</div>
 </div>
 <div class="paragraph">
-<p>Inheritance in the initial example is handled using a fluent DSL. Fluent DSL uses a feature called <a href="http://docs.groovy-lang.org/docs/latest/html/documentation/core-domain-specific-languages.html#_command_chains">Command Chains</a>
+<p>Declaring inheritance is handled using a fluent DSL. Fluent DSL uses a feature called
+<a href="http://docs.groovy-lang.org/docs/latest/html/documentation/core-domain-specific-languages.html#_command_chains">Command Chains</a>
 which allows to skip the parentheses.</p>
 </div>
 <div class="paragraph">
-<p><code>inherits</code> is just a regular method of <code>Type</code>.</p>
+<p>Method <code>inherits</code> is just a very simple method of <code>Type</code> which returns instance of <code>InheritanceBuilder</code>
+which handles rest of the DSL statement.</p>
 </div>
 <div class="listingblock">
 <div class="title">Method <code>inherits</code></div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">InheritanceBuilder inherits(From from) {
-    return new InheritanceBuilder(diagram, this)
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">public InheritanceBuilder inherits(DiagramKeywords.From from) {
+    return new InheritanceBuilder(diagram, this);
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>InheritanceBuilder</code> is a helper class to specify the rest of the information.<code>From</code> is just an enum
-returned from <code>Diagram.getFrom()</code> static method.</p>
+<p><code>InheritanceBuilder</code> is a helper class to specify the rest of the information. <code>From</code> is just an enum
+with single value <code>FROM</code> which is passed into the DSL from static import.</p>
 </div>
 <div class="listingblock">
 <div class="title">Class <code>InheritanceBuilder</code></div>
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">@CompileStatic
-class InheritanceBuilder {
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">package cz.orany.yuml.model;
 
-    private final Type source
-    private final Diagram diagram
+public class InheritanceBuilder {
 
+    private final Diagram diagram;
+    private final Type type;
 
-    InheritanceBuilder(Diagram diagram, Type destination) {
-        this.source = destination
-        this.diagram = diagram
+    public InheritanceBuilder(Diagram diagram, Type type) {
+
+        this.diagram = diagram;
+        this.type = type;
     }
 
-    Relationship type(String destination) {
-        return diagram.inheritance(source.name, destination)
+    public Relationship type(String parent) {
+        return diagram.inheritance(type.getName(), parent, c-&gt; {});
     }
 }</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Here is another example of Fluent DSL to specify the cardinality of the items:</p>
-</div>
-<div class="listingblock">
-<div class="title">Fluent DSL</div>
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">Unresolved directive in index.adoc - include::../yuml/src/test/groovy/cz/orany/yuml/model/Diagram03Spec.groovy[tag=fluent]</code></pre>
 </div>
 </div>
 <div class="sect2">
@@ -923,19 +962,250 @@ class InheritanceBuilder {
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Implement method accepting closures for building relationships</p>
+<p>Implement static method accepting consumer for building diagram.</p>
 </li>
 <li>
-<p>Implement method accepting closures as shortcuts for each relationship type</p>
+<p>Implement methods accepting consumer for building relationships of different types.</p>
 </li>
 <li>
-<p>Implement fluent DSL for describing inheritance</p>
+<p>Implement fluent DSL for describing inheritance.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_3_basic_groovy_dsl">3. Basic Groovy DSL</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>It is quite easy to add groovy DSL extension once we have methods accepting functional types. Here is an example of
+the desired DSL in Groovy.</p>
+</div>
+<div class="listingblock">
+<div class="title">Groovy Version of the DSL</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-groovy" data-lang="groovy">@CompileStatic                                                                      <i class="conum" data-value="1"></i><b>(1)</b>
+private static Diagram buildOrderDiagram() {
+    Diagram.build { Diagram d -&gt;                                                    <i class="conum" data-value="2"></i><b>(2)</b>
+        note('You can stick notes on diagrams too!', 'skyblue')
+
+        aggregation('Customer', 'Order') {                                          <i class="conum" data-value="3"></i><b>(3)</b>
+            source cardinality: '1'                                                 <i class="conum" data-value="4"></i><b>(4)</b>
+            destination cardinality: '0..*', title: 'orders'
+        }
+
+        buildOrderTypes(d)                                                          <i class="conum" data-value="5"></i><b>(5)</b>
+
+        association('Category', 'Product') {
+            bidirectional true
+        }
+
+        type 'National' inherits from type 'DeliveryMethod'
+        type 'International' inherits from type 'DeliveryMethod'
+    }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>The goal is to give the static compiler enough hints to be able to compile the code statically</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>New static method in the <code>Diagram</code> class which delegates the closure to the instance of <code>Diagram</code> class and which passes thesame instance of <code>Diagram</code> class as a single parameter of the closure</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>New method in the <code>Diagram</code> class which helps building a <code>Relationship</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>New method in the <code>Relationship</code> class which accepts named arguments and helps specifying the cardinality and title</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>The closure parameter <code>Diagram d</code> can be used extract parts of the diagram definition to separate method</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>It is a good practise not to mix Java API and Groovy API together so let&#8217;s use <a href="http://groovy-lang.org/metaprogramming.html#_extension_modules">Groovy Extension Modules</a>
+to add additional methods to our current Java API.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s create a extension module descriptor text file called <code>org.codehaus.groovy.runtime.ExtensionModule</code> in <code>src/main/resources/META-INF/services/</code></p>
+</div>
+<div class="listingblock">
+<div class="title">Extension Module Descriptor</div>
+<div class="content">
+<pre>moduleName=yuml-extra
+moduleVersion=0.1.0
+extensionClasses=cz.orany.yuml.groovy.DiagramExtensions
+staticExtensionClasses=cz.orany.yuml.groovy.DiagramStaticExtensions</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Obviously we need create two new classes as well - <code>DiagramStaticExtensions</code> and <code>DiagramExtensions</code></p>
+</div>
+<div class="listingblock">
+<div class="title">Static Extension Class</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">package cz.orany.yuml.groovy;
+
+import cz.orany.yuml.model.Diagram;
+import cz.orany.yuml.model.DiagramContent;
+import cz.orany.yuml.model.DiagramKeywords;
+import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
+import groovy.transform.stc.ClosureParams;
+import groovy.transform.stc.SimpleType;
+import space.jasan.support.groovy.closure.ConsumerWithDelegate;
+
+public class DiagramStaticExtensions {
+
+    public static Diagram build(                                                        <i class="conum" data-value="1"></i><b>(1)</b>
+        Diagram self,                                                                   <i class="conum" data-value="2"></i><b>(2)</b>
+        @DelegatesTo(value = Diagram.class, strategy = Closure.DELEGATE_FIRST)          <i class="conum" data-value="3"></i><b>(3)</b>
+        @ClosureParams(value=SimpleType.class, options="cz.orany.yuml.model.Diagram")   <i class="conum" data-value="4"></i><b>(4)</b>
+        Closure&lt;? extends DiagramContent&gt; definition                                    <i class="conum" data-value="5"></i><b>(5)</b>
+    ) {
+        return Diagram.create(ConsumerWithDelegate.create(definition));                 <i class="conum" data-value="6"></i><b>(6)</b>
+    }
+
+    public static DiagramKeywords.From getFrom(Diagram self) {                          <i class="conum" data-value="7"></i><b>(7)</b>
+        return DiagramKeywords.From.FROM;
+    }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Add a new static method called <code>build</code> &#8230;&#8203;</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>&#8230;&#8203; to the <code>Diagram</code> class</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td><code>@DelegatesTo</code> tells the compiler and IDE which object will be send as a delegate</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td><code>@ClosureParams</code> tells the compiler and IDE which object will be passed as closure parameters</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Return value of the closure should be the common type of the return values of every possible DSL statement to prevent unfinished statements such as <code>type 'Type' inherits from</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td><code>ConsumerWithDelegates</code> is a helper class from <a href="https://github.com/jasanspace/groovy-closure-support">Groovy Closure Support</a> library which helps using
+closures with methods which accepts common Java functional interfaces such as <code>Consumer</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="7"></i><b>7</b></td>
+<td>Shortcut to <code>from</code> keyword so no static imports are required in Groovy code</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Please, pay attention that the name of the static method added to <code>Diagram</code> class is different (<code>build</code>) then
+the one accepting <code>Consumer</code> (<code>create</code>). There is a bug in groovy which prevents overloading static methods.
+The restriction does not apply on the instance methods.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="title">Extension Class</div>
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-java" data-lang="java">public class DiagramExtensions {
+
+    private static final String CARDINALITY = "cardinality";
+    private static final String TITLE = "title";
+
+    public static Relationship relationship(
+            Diagram diagram,
+            String source,
+            RelationshipType type,
+            String destination,
+            @DelegatesTo(value = Relationship.class, strategy = Closure.DELEGATE_FIRST)
+            @ClosureParams(value = SimpleType.class, options = "cz.orany.yuml.model.Relationship")
+            Closure&lt;Relationship&gt; configuration
+    ) {
+        return diagram.relationship(source, type, destination, ConsumerWithDelegate.create(configuration));
+    }
+
+
+    public static Relationship source(                                                  <i class="conum" data-value="1"></i><b>(1)</b>
+            Relationship self,                                                          <i class="conum" data-value="2"></i><b>(2)</b>
+            @NamedParams({                                                              <i class="conum" data-value="3"></i><b>(3)</b>
+                    @NamedParam(value = CARDINALITY, type = String.class),              <i class="conum" data-value="4"></i><b>(4)</b>
+                    @NamedParam(value = TITLE, type = String.class)
+            })
+                    Map&lt;String, String&gt; cardinalityAndTitle                             <i class="conum" data-value="5"></i><b>(5)</b>
+    ) {
+        return self.source(
+                cardinalityAndTitle.get(CARDINALITY),
+                cardinalityAndTitle.get(TITLE)
+        );
+    }
+
+    // rest of the methods
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Add a new method called <code>source</code> &#8230;&#8203;</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>&#8230;&#8203; to the <code>Relationship</code> class</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td><code>@NamedParams</code> aggregates the possible named parameters</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>For example parameter <code>cardinality</code> of type <code>String</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>The argument itself is still just plain old <code>Map</code></td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_tasks_3">Tasks</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Add a static method <code>build</code> accepting closure to the <code>Diagram</code> class</p>
 </li>
 <li>
-<p>Implement fluent DSL for describing cardinality and title</p>
+<p>Add a shortcut keyword <code>from</code> to the <code>Diagram</code> class</p>
 </li>
 <li>
-<p>Make <code>Diagram03Spec</code> passing</p>
+<p>Add methods for creating relationships to the <code>Diagram</code> class which accept closures</p>
+</li>
+<li>
+<p>Add methods to specify cardinality and title to the <code>Relationship</code> clas which accept named parameters</p>
 </li>
 </ol>
 </div>
@@ -1132,7 +1402,7 @@ Thanks to these features the implementation is pretty minimal:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_tasks_3">Tasks</h3>
+<h3 id="_tasks_4">Tasks</h3>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1205,7 +1475,7 @@ as <code>with</code> method is already sending self as a single parameter to the
 </table>
 </div>
 <div class="sect2">
-<h3 id="_tasks_4">Tasks</h3>
+<h3 id="_tasks_5">Tasks</h3>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1331,7 +1601,7 @@ by updating the <code>DefaultDiagram</code> class to also hold the <code>owner</
 </table>
 </div>
 <div class="sect2">
-<h3 id="_tasks_5">Tasks</h3>
+<h3 id="_tasks_6">Tasks</h3>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1477,7 +1747,7 @@ class PropertiesDiagramHelperExtensions {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_tasks_6">Tasks</h3>
+<h3 id="_tasks_7">Tasks</h3>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1553,7 +1823,7 @@ the original ones except the accept the original type as a first argument:</p>
 helper wrappers for closures and popular <code>java.util.function.</code> types.</p>
 </div>
 <div class="sect2">
-<h3 id="_tasks_7">Tasks</h3>
+<h3 id="_tasks_8">Tasks</h3>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1584,7 +1854,7 @@ helper wrappers for closures and popular <code>java.util.function.</code> types.
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-03-13 14:47:45 +00:00
+Last updated 2019-03-13 16:15:57 +00:00
 </div>
 </div>
 </body>
