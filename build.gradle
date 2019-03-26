@@ -15,6 +15,7 @@ task exercisesArchive(type: Zip) {
         include 'gradle/**'
         include '.editorconfig'
         include 'gradlew**'
+        include 'settings.gradle'
     }
 
     from('.') {
