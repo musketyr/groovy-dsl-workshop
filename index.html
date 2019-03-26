@@ -592,7 +592,23 @@ your current sub-project.
 <div class="sectionbody">
 <div class="paragraph">
 <p>In this workshop, we are going to create DSL for <a href="https://yuml.me/">yUML.me</a> diagrams.
-yUML helps to create simple UML diagram online. Its simplified data model is shown in the following diagram:</p>
+yUML helps to create simple UML diagram online.</p>
+</div>
+<div class="listingblock">
+<div class="title">YUML Diagram&#8217;s Syntax Example</div>
+<div class="content">
+<pre>[note: You can stick notes on diagrams too!{bg:cornsilk}]
+[Customer]&lt;&gt;1-orders 0..*&gt;[Order]
+[Order]++*-*&gt;[LineItem]
+[Order]-1&gt;[DeliveryMethod]
+[Order]*-*&gt;[Product]
+[Category]&lt;-&gt;[Product]
+[DeliveryMethod]^[National]
+[DeliveryMethod]^[International]</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Its simplified data model is shown in the following diagram:</p>
 </div>
 <div class="paragraph">
 <div class="title">YUML Diagram&#8217;s Model</div>
@@ -1564,7 +1580,7 @@ now uses <code>*Definition</code> interfaces only.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-03-26 10:22:29 +00:00
+Last updated 2019-03-26 10:37:48 +00:00
 </div>
 </div>
 </body>
