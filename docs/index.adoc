@@ -62,7 +62,22 @@ your current sub-project.
 == Introduction
 
 In this workshop, we are going to create DSL for https://yuml.me/[yUML.me] diagrams.
-yUML helps to create simple UML diagram online. Its simplified data model is shown in the following diagram:
+yUML helps to create simple UML diagram online.
+
+.YUML Diagram's Syntax Example
+----
+[note: You can stick notes on diagrams too!{bg:cornsilk}]
+[Customer]<>1-orders 0..*>[Order]
+[Order]++*-*>[LineItem]
+[Order]-1>[DeliveryMethod]
+[Order]*-*>[Product]
+[Category]<->[Product]
+[DeliveryMethod]^[National]
+[DeliveryMethod]^[International]
+----
+
+
+Its simplified data model is shown in the following diagram:
 
 .YUML Diagram's Model
 image:yuml-diagram.png[yUML Diagram's Model]
