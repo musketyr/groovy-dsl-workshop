@@ -5,6 +5,7 @@ Vladimír Oraný <https://github.com/musketyr[icon:github[] @musketyr]>
 
 In this workshop we will learn how to create domain specific languages (DSL) in Groovy.
 We will create builder-pattern style DSL with nested blocks which perfectly suits the Groovy language.
+All the code exercises are written in Java so no previous knowledge of Groovy is required.
 
 > The builder pattern is used to create complex objects with constituent parts that must be created in the same order or using a specific algorithm. An external class controls the construction algorithm. — The Gang of Four
 
