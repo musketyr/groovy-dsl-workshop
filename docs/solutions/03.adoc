@@ -1,0 +1,17 @@
+= 2. Basic Groovy DSL
+
+Here is the complete version of the `DiagramStaticExtensions` class. Please, ignore the callouts in the code.
+
+[source,java,indent=0,options="nowrap"]
+.Diagram Extensions
+----
+include::../../step-03/src/main/groovy/cz/orany/yuml/groovy/DiagramStaticExtensions.java[]
+----
+
+Here is the complete version of the `DiagramExtensions` class. Please, ignore the callouts in the code.
+
+[source,java,indent=0,options="nowrap"]
+.Diagram Static Extensions
+----
+include::../../step-03/src/main/groovy/cz/orany/yuml/groovy/DiagramExtensions.java[]
+----

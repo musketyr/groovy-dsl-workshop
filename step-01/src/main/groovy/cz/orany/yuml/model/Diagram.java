@@ -12,21 +12,25 @@ public class Diagram {
         return note(text, null);
     }
 
-    public Note note(String text, String color) {
+    public Note note(String text, String color) {                                       // <1>
         Note note = new Note(text, color);
         notes.add(note);
         return note;
     }
 
     public Type type(String name) {
-        return types.computeIfAbsent(name, Type::new);
+        return types.computeIfAbsent(name, Type::new);                                  // <2>
     }
 
     public Relationship relationship(Type source, Type destination) {
         return relationship(source, RelationshipType.ASSOCIATION, destination);
     }
 
-    public Relationship relationship(Type source, RelationshipType type, Type destination) {
+    public Relationship relationship(                                                   // <3>
+            Type source,
+            RelationshipType type,
+            Type destination
+    ) {
         Relationship relationship = new Relationship(source, type, destination);
         relationships.add(relationship);
         return relationship;

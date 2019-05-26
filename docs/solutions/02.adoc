@@ -1,0 +1,11 @@
+= 2. Basic Java DSL
+
+
+Here is the complete version of the `Diagram` class.
+[source,java,indent=0,options="nowrap"]
+.Basic Java DSL
+----
+include::../../step-02/src/main/groovy/cz/orany/yuml/model/Diagram.java[]
+----
+
+For the fluent DSL you just need to copy & paste the examples from the main document into `Type` class and a new `InheritanceBuilder.java` file.

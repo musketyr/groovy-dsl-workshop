@@ -152,6 +152,8 @@ The initial version is very verbose and there is definitely lot of place for the
 
 The most of the verbosity of the initial example originates from manual handling
 of diagram's content - relationships, notes and types. Let's make `Diagram` class responsible for managing these items.
+Let's create methods `note`, `type`, `relationship` which will internally create or reuse existing parts of the
+diagram:
 
 [source,groovy,indent=0,options="nowrap"]
 .Diagram Responsible for Content Management
@@ -166,13 +168,16 @@ replace method `with` with our own implementation.
 === Tasks
 
 1. Implement methods `note`, `type` and `relationship` in `Diagram` class to manage diagram content. Methods must not create duplicates for the same input.
-2. Make `Diagram02Spec.groovy` passing.
+2. Make `Diagram01Spec` passing.
+
+You can find solution link:solutions/01.html[here, target=_blank].
 
 == 2. Basic Java DSL
 
 In this step we are going to replace calling `with` method with custom methods.
 As we write your DSL code in Java we start with implementation using `Consumer`
-functional interface.
+functional interface which will pass the instance being configured (e.g. `Relationship`) into the single absract method
+`accept`. As `Consumer` is functional interface we can use Java lambda syntax. After that, we will get closer to desired tree-like structure of the code.
 
 [source,java,indent=0,options="nowrap"]
 .Java Version of the DSL
@@ -212,10 +217,12 @@ include::../step-02/src/main/groovy/cz/orany/yuml/model/InheritanceBuilder.java[
 ----
 
 === Tasks
-1. Implement static method accepting consumer for building diagram.
-2. Implement methods accepting consumer for building relationships of different types.
-3. Implement fluent DSL for describing inheritance.
+1. Implement methods `association`, `aggregation`, `inheritance` and `composition` accepting `Consumer` in `Diagram` class for building different kinds of relationships.
+2. Implement static method `create` in `Diagram` class which is accepting `Consumer` to build the whole diagram.
+3. Practise implementing the fluent DSL for creating inheritance (feel free to copy & paste it from the snippets above)
+4. Make `Diagram02Test` passing.
 
+You can find solution link:solutions/02.html[here, target=_blank].
 
 == 3. Basic Groovy DSL
 
@@ -228,7 +235,7 @@ the desired DSL in Groovy.
 include::../step-03/src/test/groovy/cz/orany/yuml/model/Diagram03Spec.groovy[tag=dsl]
 ----
 <1> The goal is to give the static compiler enough hints to be able to compile the code statically
-<2> New static method in the `Diagram` class which delegates the closure to the instance of `Diagram` class and which passes thesame instance of `Diagram` class as a single parameter of the closure
+<2> New static method in the `Diagram` class which delegates the closure to the instance of `Diagram` class and which passes the same instance of `Diagram` class as a single parameter of the closure
 <3> New method in the `Diagram` class which helps building a `Relationship`
 <4> New method in the `Relationship` class which accepts named arguments and helps specifying the cardinality and title
 <5> The closure parameter `Diagram d` can be used extract parts of the diagram definition to separate method
@@ -243,7 +250,9 @@ Let's create a extension module descriptor text file called `org.codehaus.groovy
 include::../step-03/src/main/resources/META-INF/services/org.codehaus.groovy.runtime.ExtensionModule[]
 ----
 
-Obviously we need create two new classes as well - `DiagramStaticExtensions` and `DiagramExtensions`
+Obviously we need create two new classes as well - `DiagramStaticExtensions` and `DiagramExtensions`. We will use annotations
+described in https://medium.com/p/df2e9a02557a[The Aid: Using the annotations for static compilation] to add a hints for the
+static compiler and also the IDE.
 
 [source,java,indent=0,options="nowrap"]
 .Static Extension Class
@@ -263,6 +272,9 @@ WARNING: Please, pay attention that the name of the static method added to `Diag
 the one accepting `Consumer` (`create`). There is a bug in groovy which prevents overloading static methods.
 The restriction does not apply on the instance methods.
 
+You may notice that in the example we also used a new methods `source` and `destination` accepting map as a parameter.
+We can define additional checks to this methods using annotations mentioned in https://medium.com/p/d065f0253e98[The Navigation: Using the annotations for named parameters].
+
 [source,java,indent=0,options="nowrap"]
 .Extension Class
 ----
@@ -280,14 +292,19 @@ include::../step-03/src/main/groovy/cz/orany/yuml/groovy/DiagramExtensions.java[
 <5> The argument itself is still just plain old `Map`
 
 === Tasks
-1. Add a static method `build` accepting closure to the `Diagram` class
-2. Add a shortcut keyword `from` to the `Diagram` class
-3. Add methods for creating relationships to the `Diagram` class which accept closures
+1. Using a static extension class, add a static method `build` accepting closure to the `Diagram` class
+2. Using a static extension class, add a shortcut keyword `from` to the `Diagram` class (i.e. `getFrom` method)
+3. Using an extension class, add methods for creating different types of relationships to the `Diagram` class which accept closures
 4. Add methods to specify cardinality and title to the `Relationship` clas which accept named parameters
+5. Make `Diagram03Spec` passing
 
-== [Bonus] 4. Designing for Extendability
+== 4. [Bonus] Designing for Extendability
 
-A good DSL is open and provides enough extension points to allow developers to extend the original functionality.
+_This is and advanced exercise. Feel free to ignore it or just read through it if you don't feel comfortable trying to implement this step._
+
+A good DSL is open and provides enough extension points to allow developers to extend the original functionality. Please, read
+https://medium.com/p/d612fd261471[The Extension: Designing your builder DSL for extendability] to better understand the mechanism of
+creating extendable DSL.
 
 For example, some developers would like to add support for stereotypes and properties.
 
@@ -360,11 +377,17 @@ include::../step-04/src/main/groovy/cz/orany/yuml/export/YumlDiagramPrinter.java
 ----
 
 === Tasks
-1. Add a method `stereotype` to the Groovy DSL
-2. Add a ability to specify type's properties to the Groovy DSL
+1. Using an extension class, add a method `stereotype` to the Groovy DSL
+2. Using an extension class, add a ability to specify type's properties to the Groovy DSL
 3. Update the printer class to print types' properties
+4. Make `Diagram04Spec` passing.
 
-== [Bonus] 5. API Clean Up
+You can find the solution in the `step-05/src/main/java/` source codes.
+
+== 5. [Bonus] API Clean Up
+
+_This is and advanced and quite stereotype exercise. Feel free to ignore it or just read through it if you don't feel comfortable trying to implement this step._
+
 
 The current version of the DSL allows calling all the operations of the diagram objects inside the definition.
 It is a good practice to split the methods for reading and the methods for defining the diagram into two separate
@@ -389,3 +412,6 @@ now uses `*Definition` interfaces only.
 
 === Tasks
 1. Separate the read and definition roles of the diagram using interfaces
+2. Make `Diagram05Spec` passing
+
+You can find the solution in the `step-99/src/main/java/` source codes.

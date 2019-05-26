@@ -1,0 +1,10 @@
+= 1. Self-managed Content Solution
+
+[source,java,indent=0,options="nowrap"]
+.Self-managed Content Solution
+----
+include::../../step-01/src/main/groovy/cz/orany/yuml/model/Diagram.java[]
+----
+<1> Method `note` always creates new note in the diagram and return the new note
+<2> Method `type` creates new type if it doesn't exist yet in the diagram and return the new or existing type
+<3> Method `relationship` always creates new relationship in the diagram and return the new relationship
