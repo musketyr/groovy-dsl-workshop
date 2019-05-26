@@ -285,7 +285,7 @@ include::../step-03/src/main/groovy/cz/orany/yuml/groovy/DiagramExtensions.java[
 3. Add methods for creating relationships to the `Diagram` class which accept closures
 4. Add methods to specify cardinality and title to the `Relationship` clas which accept named parameters
 
-== 4. Designing for Extendability
+== [Bonus] 4. Designing for Extendability
 
 A good DSL is open and provides enough extension points to allow developers to extend the original functionality.
 
@@ -364,7 +364,7 @@ include::../step-04/src/main/groovy/cz/orany/yuml/export/YumlDiagramPrinter.java
 2. Add a ability to specify type's properties to the Groovy DSL
 3. Update the printer class to print types' properties
 
-== 5. API Clean Up
+== [Bonus] 5. API Clean Up
 
 The current version of the DSL allows calling all the operations of the diagram objects inside the definition.
 It is a good practice to split the methods for reading and the methods for defining the diagram into two separate

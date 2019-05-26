@@ -94,7 +94,11 @@ class Diagram00Spec extends Specification {
             // end::constructors[]
 
         expect:
-            new YumlDiagramPrinter().print(diagram).trim() == EXPECTED_DIAGRAM
+            normalize(new YumlDiagramPrinter().print(diagram)) == normalize(EXPECTED_DIAGRAM)
+    }
+
+    private static String normalize(String string) {
+        return string.trim().replace('\\s+', " ")
     }
 
 }

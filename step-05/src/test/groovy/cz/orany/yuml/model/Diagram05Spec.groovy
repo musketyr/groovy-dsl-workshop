@@ -35,7 +35,7 @@ class Diagram05Spec extends Specification {
         given:
             DiagramPrinter printer = new YumlDiagramPrinter()
         expect:
-            printer.print(diagram).trim() == expected
+            normalize(printer.print(diagram)) == normalize(expected)
 
             diagram.relationships*.source.every { it in diagram.types }
             diagram.relationships*.destination.every { it in diagram.types }
@@ -108,5 +108,9 @@ class Diagram05Spec extends Specification {
                 property 'string', 'name'
             }
         }
+    }
+
+    private static String normalize(String string) {
+        return string.trim().replace('\\s+', " ")
     }
 }

@@ -15,7 +15,7 @@ public class Diagram02Test {
     public void testDiagramJava() {
         DiagramPrinter printer = new YumlDiagramPrinter();
         Diagram diagram = buildDiagram();
-        Assert.assertEquals(EXPECTED_TEXT, printer.print(diagram));
+        Assert.assertEquals(normalize(EXPECTED_TEXT), normalize(printer.print(diagram)));
     }
     // tag::build[]
     private Diagram buildDiagram() {
@@ -50,5 +50,9 @@ public class Diagram02Test {
         });
     }
     // end::build[]
+
+    private static String normalize(String string) {
+        return string.trim().replace("\\s+", " ");
+    }
 
 }

@@ -54,11 +54,14 @@ class Diagram01Spec extends Specification {
             // end::with[]
 
         expect:
-            new YumlDiagramPrinter().print(diagram).trim() == EXPECTED_DIAGRAM
+            normalize(new YumlDiagramPrinter().print(diagram)) == normalize(EXPECTED_DIAGRAM)
 
             diagram.relationships*.source.every { it in diagram.types }
             diagram.relationships*.destination.every { it in diagram.types }
     }
 
+    private static String normalize(String string) {
+        return string.trim().replace('\\s+', " ")
+    }
 
 }
