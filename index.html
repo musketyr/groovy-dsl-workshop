@@ -457,12 +457,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_tasks_3">Tasks</a></li>
 </ul>
 </li>
-<li><a href="#__bonus_4_designing_for_extendability">[Bonus] 4. Designing for Extendability</a>
+<li><a href="#_4_bonus_designing_for_extendability">4. [Bonus] Designing for Extendability</a>
 <ul class="sectlevel2">
 <li><a href="#_tasks_4">Tasks</a></li>
 </ul>
 </li>
-<li><a href="#__bonus_5_api_clean_up">[Bonus] 5. API Clean Up</a>
+<li><a href="#_5_bonus_api_clean_up">5. [Bonus] API Clean Up</a>
 <ul class="sectlevel2">
 <li><a href="#_tasks_5">Tasks</a></li>
 </ul>
@@ -791,7 +791,9 @@ diagram.relationships.add(new Relationship(
 <div class="sectionbody">
 <div class="paragraph">
 <p>The most of the verbosity of the initial example originates from manual handling
-of diagram&#8217;s content - relationships, notes and types. Let&#8217;s make <code>Diagram</code> class responsible for managing these items.</p>
+of diagram&#8217;s content - relationships, notes and types. Let&#8217;s make <code>Diagram</code> class responsible for managing these items.
+Let&#8217;s create methods <code>note</code>, <code>type</code>, <code>relationship</code> which will internally create or reuse existing parts of the
+diagram:</p>
 </div>
 <div class="listingblock">
 <div class="title">Diagram Responsible for Content Management</div>
@@ -843,9 +845,12 @@ replace method <code>with</code> with our own implementation.</p>
 <p>Implement methods <code>note</code>, <code>type</code> and <code>relationship</code> in <code>Diagram</code> class to manage diagram content. Methods must not create duplicates for the same input.</p>
 </li>
 <li>
-<p>Make <code>Diagram02Spec.groovy</code> passing.</p>
+<p>Make <code>Diagram01Spec</code> passing.</p>
 </li>
 </ol>
+</div>
+<div class="paragraph">
+<p>You can find solution <a href="solutions/01.html">here, target=_blank</a>.</p>
 </div>
 </div>
 </div>
@@ -856,7 +861,8 @@ replace method <code>with</code> with our own implementation.</p>
 <div class="paragraph">
 <p>In this step we are going to replace calling <code>with</code> method with custom methods.
 As we write your DSL code in Java we start with implementation using <code>Consumer</code>
-functional interface.</p>
+functional interface which will pass the instance being configured (e.g. <code>Relationship</code>) into the single absract method
+<code>accept</code>. As <code>Consumer</code> is functional interface we can use Java lambda syntax. After that, we will get closer to desired tree-like structure of the code.</p>
 </div>
 <div class="listingblock">
 <div class="title">Java Version of the DSL</div>
@@ -962,15 +968,21 @@ public class InheritanceBuilder {
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Implement static method accepting consumer for building diagram.</p>
+<p>Implement methods <code>association</code>, <code>aggregation</code>, <code>inheritance</code> and <code>composition</code> accepting <code>Consumer</code> in <code>Diagram</code> class for building different kinds of relationships.</p>
 </li>
 <li>
-<p>Implement methods accepting consumer for building relationships of different types.</p>
+<p>Implement static method <code>create</code> in <code>Diagram</code> class which is accepting <code>Consumer</code> to build the whole diagram.</p>
 </li>
 <li>
-<p>Implement fluent DSL for describing inheritance.</p>
+<p>Practise implementing the fluent DSL for creating inheritance (feel free to copy &amp; paste it from the snippets above)</p>
+</li>
+<li>
+<p>Make <code>Diagram02Test</code> passing.</p>
 </li>
 </ol>
+</div>
+<div class="paragraph">
+<p>You can find solution <a href="solutions/02.html">here, target=_blank</a>.</p>
 </div>
 </div>
 </div>
@@ -1015,7 +1027,7 @@ private static Diagram buildOrderDiagram() {
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>New static method in the <code>Diagram</code> class which delegates the closure to the instance of <code>Diagram</code> class and which passes thesame instance of <code>Diagram</code> class as a single parameter of the closure</td>
+<td>New static method in the <code>Diagram</code> class which delegates the closure to the instance of <code>Diagram</code> class and which passes the same instance of <code>Diagram</code> class as a single parameter of the closure</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
@@ -1048,7 +1060,9 @@ staticExtensionClasses=cz.orany.yuml.groovy.DiagramStaticExtensions</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Obviously we need create two new classes as well - <code>DiagramStaticExtensions</code> and <code>DiagramExtensions</code></p>
+<p>Obviously we need create two new classes as well - <code>DiagramStaticExtensions</code> and <code>DiagramExtensions</code>. We will use annotations
+described in <a href="https://medium.com/p/df2e9a02557a">The Aid: Using the annotations for static compilation</a> to add a hints for the
+static compiler and also the IDE.</p>
 </div>
 <div class="listingblock">
 <div class="title">Static Extension Class</div>
@@ -1128,6 +1142,10 @@ The restriction does not apply on the instance methods.
 </tr>
 </table>
 </div>
+<div class="paragraph">
+<p>You may notice that in the example we also used a new methods <code>source</code> and <code>destination</code> accepting map as a parameter.
+We can define additional checks to this methods using annotations mentioned in <a href="https://medium.com/p/d065f0253e98">The Navigation: Using the annotations for named parameters</a>.</p>
+</div>
 <div class="listingblock">
 <div class="title">Extension Class</div>
 <div class="content">
@@ -1196,16 +1214,19 @@ The restriction does not apply on the instance methods.
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Add a static method <code>build</code> accepting closure to the <code>Diagram</code> class</p>
+<p>Using a static extension class, add a static method <code>build</code> accepting closure to the <code>Diagram</code> class</p>
 </li>
 <li>
-<p>Add a shortcut keyword <code>from</code> to the <code>Diagram</code> class</p>
+<p>Using a static extension class, add a shortcut keyword <code>from</code> to the <code>Diagram</code> class (i.e. <code>getFrom</code> method)</p>
 </li>
 <li>
-<p>Add methods for creating relationships to the <code>Diagram</code> class which accept closures</p>
+<p>Using an extension class, add methods for creating different types of relationships to the <code>Diagram</code> class which accept closures</p>
 </li>
 <li>
 <p>Add methods to specify cardinality and title to the <code>Relationship</code> clas which accept named parameters</p>
+</li>
+<li>
+<p>Make <code>Diagram03Spec</code> passing</p>
 </li>
 </ol>
 </div>
@@ -1213,10 +1234,15 @@ The restriction does not apply on the instance methods.
 </div>
 </div>
 <div class="sect1">
-<h2 id="__bonus_4_designing_for_extendability">[Bonus] 4. Designing for Extendability</h2>
+<h2 id="_4_bonus_designing_for_extendability">4. [Bonus] Designing for Extendability</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>A good DSL is open and provides enough extension points to allow developers to extend the original functionality.</p>
+<p><em>This is and advanced exercise. Feel free to ignore it or just read through it if you don&#8217;t feel comfortable trying to implement this step.</em></p>
+</div>
+<div class="paragraph">
+<p>A good DSL is open and provides enough extension points to allow developers to extend the original functionality. Please, read
+<a href="https://medium.com/p/d612fd261471">The Extension: Designing your builder DSL for extendability</a> to better understand the mechanism of
+creating extendable DSL.</p>
 </div>
 <div class="paragraph">
 <p>For example, some developers would like to add support for stereotypes and properties.</p>
@@ -1466,22 +1492,31 @@ public class PropertiesDiagramHelper implements DiagramHelper {
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Add a method <code>stereotype</code> to the Groovy DSL</p>
+<p>Using an extension class, add a method <code>stereotype</code> to the Groovy DSL</p>
 </li>
 <li>
-<p>Add a ability to specify type&#8217;s properties to the Groovy DSL</p>
+<p>Using an extension class, add a ability to specify type&#8217;s properties to the Groovy DSL</p>
 </li>
 <li>
 <p>Update the printer class to print types' properties</p>
 </li>
+<li>
+<p>Make <code>Diagram04Spec</code> passing.</p>
+</li>
 </ol>
+</div>
+<div class="paragraph">
+<p>You can find the solution in the <code>step-05/src/main/java/</code> source codes.</p>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="__bonus_5_api_clean_up">[Bonus] 5. API Clean Up</h2>
+<h2 id="_5_bonus_api_clean_up">5. [Bonus] API Clean Up</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p><em>This is and advanced and quite stereotype exercise. Feel free to ignore it or just read through it if you don&#8217;t feel comfortable trying to implement this step.</em></p>
+</div>
 <div class="paragraph">
 <p>The current version of the DSL allows calling all the operations of the diagram objects inside the definition.
 It is a good practice to split the methods for reading and the methods for defining the diagram into two separate
@@ -1573,7 +1608,13 @@ now uses <code>*Definition</code> interfaces only.</p>
 <li>
 <p>Separate the read and definition roles of the diagram using interfaces</p>
 </li>
+<li>
+<p>Make <code>Diagram05Spec</code> passing</p>
+</li>
 </ol>
+</div>
+<div class="paragraph">
+<p>You can find the solution in the <code>step-99/src/main/java/</code> source codes.</p>
 </div>
 </div>
 </div>
@@ -1581,7 +1622,7 @@ now uses <code>*Definition</code> interfaces only.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-05-26 08:14:39 +00:00
+Last updated 2019-05-26 16:21:45 +00:00
 </div>
 </div>
 </body>
