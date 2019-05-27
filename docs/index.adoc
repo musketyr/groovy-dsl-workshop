@@ -170,7 +170,7 @@ replace method `with` with our own implementation.
 1. Implement methods `note`, `type` and `relationship` in `Diagram` class to manage diagram content. Methods must not create duplicates for the same input.
 2. Make `Diagram01Spec` passing.
 
-You can find solution link:solutions/01.html[here, target=_blank].
+You can find solution link:solutions/01.html[here].
 
 == 2. Basic Java DSL
 
@@ -222,7 +222,7 @@ include::../step-02/src/main/groovy/cz/orany/yuml/model/InheritanceBuilder.java[
 3. Practise implementing the fluent DSL for creating inheritance (feel free to copy & paste it from the snippets above)
 4. Make `Diagram02Test` passing.
 
-You can find solution link:solutions/02.html[here, target=_blank].
+You can find solution link:solutions/02.html[here].
 
 == 3. Basic Groovy DSL
 
