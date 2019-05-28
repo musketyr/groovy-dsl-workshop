@@ -295,7 +295,7 @@ include::../step-03/src/main/groovy/cz/orany/yuml/groovy/DiagramExtensions.java[
 1. Using a static extension class, add a static method `build` accepting closure to the `Diagram` class
 2. Using a static extension class, add a shortcut keyword `from` to the `Diagram` class (i.e. `getFrom` method)
 3. Using an extension class, add methods for creating different types of relationships to the `Diagram` class which accept closures
-4. Add methods to specify cardinality and title to the `Relationship` clas which accept named parameters
+4. Using an extension class, add methods `source` and `destination` which accepts named parameters to specify cardinality and title into the `Relationship` class
 5. Make `Diagram03Spec` passing
 
 You can find solution link:solutions/03.html[here].
