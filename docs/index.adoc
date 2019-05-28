@@ -298,6 +298,8 @@ include::../step-03/src/main/groovy/cz/orany/yuml/groovy/DiagramExtensions.java[
 4. Add methods to specify cardinality and title to the `Relationship` clas which accept named parameters
 5. Make `Diagram03Spec` passing
 
+You can find solution link:solutions/03.html[here].
+
 == 4. [Bonus] Designing for Extendability
 
 _This is and advanced exercise. Feel free to ignore it or just read through it if you don't feel comfortable trying to implement this step._
