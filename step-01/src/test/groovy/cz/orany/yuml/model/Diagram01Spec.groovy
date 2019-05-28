@@ -16,6 +16,21 @@ class Diagram01Spec extends Specification {
         [DeliveryMethod]^[International]
     '''.stripIndent().trim()
 
+    void 'method note is implemented'() {
+        expect:
+            new Diagram().note("Sticky note", "skyblue") instanceof Note
+    }
+
+    void 'method type is implemented'() {
+        expect:
+            new Diagram().type("Customer") instanceof Type
+    }
+
+    void 'method relationship is implemented'() {
+        expect:
+            new Diagram().relationship(new Type('Customer'), new Type('Order'))
+    }
+
     void 'create orders diagram'() {
         given:
             // tag::with[]
